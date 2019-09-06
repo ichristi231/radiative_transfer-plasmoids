@@ -1,5 +1,5 @@
 # Required Tables
-This directory contains text files needed to compute the differen production or loss rates for a variety of radiative processes. Include in here is the following (with appropriate reference and description):
+This directory contains text files needed to compute the different production or loss rates for a variety of radiative processes. Include in here is the following (with appropriate reference and description):
 
 i) `single_part_emissivity_x_store.txt` & `single_part_emissivity_f_store.txt`:
 
