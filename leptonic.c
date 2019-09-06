@@ -64,7 +64,7 @@ int sw_syn_e, sw_ict, sw_ickn, sw_ssa, sw_ggee, sw_ext, sw_rtc;
 /* Synchrotron emission */
 sw_syn_e = 1; 
 /* Photon annihilation to pair production */
-sw_ggee = 0; 
+sw_ggee = 1; 
 /* Inverse Compton (Klein-Nishina regime) emission */
 sw_ickn = 1; 
 /* Inverse Compton (Thomson regime) emission */
