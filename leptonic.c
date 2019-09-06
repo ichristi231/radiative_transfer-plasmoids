@@ -1,16 +1,18 @@
-/* This is a lepto-hadronic radiative transfer code developed by M. Petropoulou, I. Christie, Z. Mitchell
+/* This is the leptonic version of a radiative transfer code developed I. Christie.
 
-This version considers a homogeneous blob in which particles are injected (for a specified amount
-of time) and computes the resulting emission and tracks the evolution of the particle distribution.
-The user can specify certain initial conditions (e.g. size of emitting region, minimum & maximum 
-Lorentz factors and slope of injected particles distributions, magnetic field strength). The code will 
-save the following to the results directory: i) photon frequency values, ii) particle Lorentz factors,
-iii) neutrino energy values, iv) temporal evolution of particle , v) neutrino, & vi) photon distributions.
+This version uses the area-averaged quantities of plasmoids as obtained from 
+particle-in-cell (PIC) simulations of PIC. Given several initial free conditions (e.g.
+half length of the reconnection layer, magentic field upstream from the layer), it
+computes the co-moving spectra of a single plasmoid. The code will save the 
+following to the 'results' directory: i) log10 of thephoton frequency values (in Hz),
+ii) log10 of the particle Lorentz factors, iii) log10 of the temporal evolution of the particle 
+distribution, & iv) log10 of the temporal evolution of the photon distribution.
 
 Different processes can be shut off by use of the switches presented below. 
 
 Throughout this work, we have adopted the work of several studies which are referenced
-below and which are referenced with appropriate eqn. # throughout the code:
+below and which are referenced with appropriate eqn. # throughout the code. If using the code,
+please make references to the following works.
 
 i) Coppi & Blandford '245 (MNRAS, 245): http://adsabs.harvard.edu/abs/1990MNRAS.245..453C
 ii) Chiaberge & Ghisellini '99 (MNRAS, 306): http://adsabs.harvard.edu/abs/1999MNRAS.306..551C
@@ -19,25 +21,28 @@ iii) Kelner & Aharonian '08 (PR, 78): http://adsabs.harvard.edu/abs/2008PhRvD..7
 iv) Mastichiadis & Kirk '95 (A&A, 295): http://adsabs.harvard.edu/abs/1995A%26A...295..613M
 v) Rybicki & Lightman '86: http://adsabs.harvard.edu/abs/1986rpa..book.....R
 
-What do we need for each individual plasmoid? Say for perfect orienation.
-plasmoid volume (smoothed, for particle injection rate)
-plasmoid Lorentz factor
-
 */
 
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
 #include <time.h>
+
 #define PI 3.14159265358979323846 
-#define c 3.0E10					/* Speed of light in cm/s. */
-#define sigmaT 6.6524E-25			/* Thomson cross section in cm^2. */
-#define kmax 300 					/* Number of grid points in the electron energy range. */
-#define lmax 300					/* Number of grid points in the photon energy/frequency range. */	
+/* Speed of light in cm/s. */
+#define c 3.0E10
+/* Thomson cross section in cm^2. */
+#define sigmaT 6.6524E-25
+/* Number of grid points in the electron energy range. */
+#define kmax 300
+/* Number of grid points in the photon energy/frequency range. */
+#define lmax 300
 
-
-double photon_annihilation_rate (double o);	/* Declaration of photon-photon pair production reaction rate. */
-double interpolation(double xx,double x1, double x2, double y1, double y2); /* Linear interpolation scheme. */  
+/* Declaration of photon-photon pair production reaction 
+   rate (see eqn. in 4.7 in Coppi & Blandford '90). */
+double photon_annihilation_rate (double o);	
+/* Linear interpolation scheme. */ 
+double interpolation(double xx,double x1, double x2, double y1, double y2);  
 
 
 int main() {
@@ -49,15 +54,32 @@ int i, sum;
 
 /*********** Radiative Processes Switches **********/
 /***************************************************/
-/* Below, we create switches which allows the user to turn on/off a certain radiative procees.
-This can be used to test the code or explore the emission from one or several different 
-processes. If the switch is equal to unity, then the process is on, if zero, it's off. */
-int sw_syn_e, sw_syn_p, sw_ict, sw_ickn, sw_ssa, sw_ggee, sw_pph, sw_ext, sw_rtc;
+/* Below, we create switches which permits to turn on/off a certain 
+   radiative procees. This can be used to test the code or explore 
+   the emission from one or several different processes (named below). 
+   If the switch is equal to unity, then the process is on, if zero, 
+   it's off. */
+int sw_syn_e, sw_ict, sw_ickn, sw_ssa, sw_ggee, sw_ext, sw_rtc;
 
-sw_syn_e = 1; sw_ggee = 0; sw_ickn = 1; 
-sw_ict = 1; sw_ssa = 1; sw_ext = 0; sw_rtc = 1;
+/* Synchrotron emission */
+sw_syn_e = 1; 
+/* Photon annihilation to pair production */
+sw_ggee = 0; 
+/* Inverse Compton (Klein-Nishina regime) emission */
+sw_ickn = 1; 
+/* Inverse Compton (Thomson regime) emission */
+sw_ict = 1; 
+/* Synchrotron self-absroption */
+sw_ssa = 1; 
+/* The addition of radiation fields external to the jet */
+sw_ext = 0; 
+/* The radiative transfer caculation. Used for checking
+   the initalization of all quantities prior to the start
+   of the radiative section. */
+sw_rtc = 1;
 /***************************************************/
 /***************************************************/
+
 
 /************************ Insert initial parameters below ************************/
 /*********************************************************************************/
@@ -102,7 +124,7 @@ BLR_temp = 1.E4;
 // int size_of_file = 2000;
 // int number_of_elements = 0;
 // char line_store[100];
-// double *plas_size = malloc(size_of_file);
+// double *plasmoid_size = malloc(size_of_file);
 // plamoid_size_file = fopen("plasmoid_1_transverse_size.txt","r");
 
 // while((fgets(line_store, 100, plamoid_size_file)) != NULL)
@@ -111,10 +133,10 @@ BLR_temp = 1.E4;
 //     {
 //         /* Make the size of the larger. */
 //         size_of_file += 10;
-//         plas_size = realloc(plas_size, size_of_file);
+//         plasmoid_size = realloc(plasmoid_size, size_of_file);
 //     }
 
-//     plas_size[number_of_elements++] = atof(line_store);
+//     plasmoid_size[number_of_elements++] = atof(line_store);
 // }
 
 // fclose(plamoid_size_file);  
@@ -132,14 +154,14 @@ FILE *plamoid_size_file = fopen("plasmoid_properties/plasmoid_1_transverse_size.
 double plasmoid_Lorentz_factor[number_of_elements];
 double plasmoid_volume[number_of_elements];
 double plasmoid_volume_derivative[number_of_elements];
-double plas_size[number_of_elements];
+double plasmoid_size[number_of_elements];
 
 for (int i = 0; i < number_of_elements; i++)
 {
     fscanf(plasmoid_Lorentz_file, "%lf", &plasmoid_Lorentz_factor[i]);
     fscanf(plasmoid_volume_file, "%lf", &plasmoid_volume[i]);
     fscanf(plasmoid_volume_derivative_file, "%lf", &plasmoid_volume_derivative[i]);
-    fscanf(plamoid_size_file, "%lf", &plas_size[i]);
+    fscanf(plamoid_size_file, "%lf", &plasmoid_size[i]);
 
 }
 
@@ -153,7 +175,7 @@ fclose(plamoid_size_file);
 
 /**************** Physcial Constants ***************/
 /***************************************************/
-double electron_mass, proton_mass, electric_charge, plank_const, boltz;
+double electron_mass, proton_mass, electric_charge, plank_const, boltzman_const;
 
 /* Electron, proton, & pion mass in g. */
 electron_mass = 9.10938E-28; 
@@ -162,8 +184,8 @@ proton_mass = 1.6726219E-24;
 electric_charge = 4.8032068E-10; 
 /* Plank's constant in erg s. */
 plank_const = 6.6260755E-27;
-/* Boltzman constant in erg K^(-1). */
-boltz = 1.380658E-16;
+/* boltzman_constman constant in erg K^(-1). */
+boltzman_const = 1.380658E-16;
 /***************************************************/
 /***************************************************/
 
@@ -228,7 +250,7 @@ measured in the co-moving frame of the emitting region. */
 
 // for (l = 0; l < lmax; l++)
 // {
-// 	U_BLR[l] = 0.5*pow(Gamma_blob_2, 2.)*(L_BLR/(4.*PI*R_BLR*R_BLR*c))*pow(h*nu[l]/(boltz*T), 3.)/(exp(h*nu[l]/(boltz*T)) - 1.);
+// 	U_BLR[l] = 0.5*pow(Gamma_blob_2, 2.)*(L_BLR/(4.*PI*R_BLR*R_BLR*c))*pow(h*nu[l]/(boltzman_const*T), 3.)/(exp(h*nu[l]/(boltzman_const*T)) - 1.);
 // 	N_BLR[l] = U_BLR[l]*vol/(electron_mass*c*c*x[l]*x[l]); if (N_BLR[l] < 1.E-200) {N_BLR[l] = 1.E-200;}
 // }
 /*****************************************************/
@@ -259,15 +281,6 @@ fclose(gamma_e_save);
 This will be used when integrating over the particle Lorentz factor 
 (e.g. synchrotron emission). */
 delta_ge_int = log(ge[1]) - log(ge[0]);
-
-/* Normalization constant for the injected electron distribution. */
-//N0 = (4.*PI*pow(R_blob,3)/3.)*UB*((2. - p_e)/(1 - p_e))*((pow(ge_max, 1. - p_e)-pow(ge_min, 1. - p_e))/(pow(ge_max, 2. - p_e)-pow(ge_min, 2. - p_e)))/(electron_mass*c*c);
-
-/* Injected electron distribution. */
-// for (k = 0; k < kmax; k++) 
-// {
-//     Qe_inj[k] = (ge[k] >= ge_min)*N0*(1. - p_e)*pow(ge[k], -p_e)/(pow(ge_max, 1. - p_e)-pow(ge_min, 1. - p_e)) /(R_blob/c);
-// }
 /***************************************************************************/
 /***************************************************************************/
 
@@ -280,8 +293,8 @@ double ict_bound[lmax];
 
 /* Determine the upper bound of the integral in eqn. 44  of Mastichiadis & Kirk '95 for the inverse
 Compton scattering (Thomson regime) of photons off an electron distribution. For those upper bounds,
-we find the closest x-value within the array such that we can easily perform the summation of the inverse Compton 
-(Thomson regime) source term. */
+we find the closest dimensionless photon frequency x-value within the array such that we can easily 
+perform the summation of the inverse Compton (Thomson regime) source term. */
 for (l = 0; l < lmax; l++)
 {
     if (3. * x[l] / 4. > 3. / (4. * x[l])) 
@@ -300,7 +313,8 @@ for (l = 0; l < lmax; l++)
     }
     ict_bound_index[l] = sum;
 }
-/* Below, we determine the index of the dimensionless frequency array which is closest
+
+/* Below, we determine the index of the dimensionless photon frequency array which is closest
  to the value of 3/4*gamma, i.e. the upper bound of the photon energy density in eqn. 43 of Mastichiadis
  & Kirk '95. We find the values, evaluated at the half-mesh points in the electron energy density. These
  indices will then be used as the limit in which the summation (integration) is carried to. */
@@ -313,10 +327,9 @@ for (k = 0; k < kmax; k++)
         ict_bound_loss_plus[k] += (3. / (4. * ge_plus[k])) >= x[l]; 
         ict_bound_loss_minus[k] += (3. / (4. * ge_minus[k])) >= x[l];
     }
-//	printf("%lf   %lf  %d  \n", log10(3./(4.*ge_plus[k])), log10(x[ict_bound_loss_plus[k]]), ict_bound_loss_plus[k]);
 }
 
-/* Below, we determine for which values of the dimensionless frequency fall within the range 
+/* Below, we determine for which values of the dimensionless photon frequency fall within the range 
 of the minimum (i.e. 1) & maximum Lorentz factors of the electron distribution. This is used
 for evaluating the electron distribution as goverened by eqn. 44 in Mastichiadis & Kirk '95.*/
 for (l = 0; l < lmax; l++)
@@ -343,9 +356,9 @@ for (l = 0; l < lmax; l++)
 /***************************************************************************************************/
 int ickn_bound_loss[kmax], ickn_bound_source[lmax], ickn_gamma_source[lmax];
 
-/* Below, we determine the appropriate index in the dimensionless frequency array in order to determine
- the lower bound on the Klein-Nishina loss term integral defined in eqn. 45 of Mastichiadis & Kirk 
-'95. */
+/* Below, we determine the appropriate index in the dimensionless photon frequency array in order to 
+determine the lower bound on the Klein-Nishina loss term integral defined in eqn. 45 of Mastichiadis 
+& Kirk '95. */
 for (k = 0; k < kmax; k++)
 {
 	ickn_bound_loss[k] = 0;
@@ -353,10 +366,9 @@ for (k = 0; k < kmax; k++)
     {
         ickn_bound_loss[k] += (3. / (4. * ge[k])) >= x[l];
     }
-	//printf("%lf   %lf  %d \n", log10(3./(4.*ge[k])), log10(x[ickn_bound_loss[k]]), ickn_bound_loss[k]);
 }
 
-/* Below, we determine the index in the dimensionless frequency array in order to determine
+/* Below, we determine the index in the dimensionless photon frequency array in order to determine
 the lower bound on the Klein-Nishina photon source term defined in eqn. 46 of Mastichiadis
 & Kirk '95. */
 for (l = 0; l < lmax; l++)
@@ -366,7 +378,6 @@ for (l = 0; l < lmax; l++)
     {
         ickn_bound_source[l] += (3. / (4. * x[l])) >= x[ll];
     }
-	//printf("%lf   %lf   %lf  %lf  %d \n", log10(3./(4.*x[l])), log10(x[ickn_bound_source[l]]), log10(nu[l]), log10(nu[ickn_bound_source[l]]), ickn_bound_source[l]);
 }
 
 /* Below, we determine the index within the electron Lorentz factor array which is closest to
@@ -382,8 +393,6 @@ for (l = 0; l < lmax; l++)
             ickn_gamma_source[l] += x[l] >= ge[k];
         }
     }
-	//printf("%lf   %lf  %d \n", log10(x[l]), log10(ge[ickn_gamma_source[l]]),ickn_gamma_source[l]);
-	//printf("%d  %d  \n", ickn_bound_source[l], ickn_gamma_source[l]);
 }
 /***************************************************************************************************/
 /***************************************************************************************************/
@@ -482,7 +491,7 @@ double Q_ICT_e[lmax], Q_ICKN_e[lmax], L_ICKN_e[kmax], L_ICT_e_plus[kmax], L_ICT_
 double Q_gg_ee[kmax], L_gg_ee[lmax];
 double L_ssa[lmax];
 double t_esc, vol;
-double delta_t = pow(10., plas_size[0]) * half_length / (2. * c);
+double delta_t = pow(10., plasmoid_size[0]) * half_length / (2. * c);
 
 
 N_tot_inj = 0;
@@ -514,7 +523,7 @@ for (i = 0; i < (number_of_elements - 1) * sw_rtc; i++)
     {
         Qe_inj[k] = (ge[k] >= ge_min)*(1. - electron_injec_slope) * pow(ge[k], -electron_injec_slope) / (pow(ge_max, 1. - electron_injec_slope) - pow(ge_min, 1. - electron_injec_slope)) * (10. * plasmoid_avg_num_den / 4.) * (pow(B_upstream, 2.) / (4. * PI * proton_mass * c * c * magnetization)) * c * plasmoid_Lorentz_factor[i] * pow(10, plasmoid_volume_derivative[i]) * half_length * half_length;
     }
-    t_esc = pow(10., plas_size[i]) * half_length / (2. * c);
+    t_esc = pow(10., plasmoid_size[i]) * half_length / (2. * c);
     vol = pow(10., plasmoid_volume[i]) * pow(half_length, 3.);
 
 
@@ -796,12 +805,12 @@ for (i = 0; i < (number_of_elements - 1) * sw_rtc; i++)
 	/******************************************************/
 	/******************************************************/
 
-    //printf("%d\n", i);
+
 	if(i % 100 == 0) 
     {
-        //printf("Finished %.2f R/c out of %.1f R/c. \n", i*delta_t/(R_blob/c), t_final/(R_blob/c));
         printf("Finished %d out of %d. \n", i, number_of_elements);
     }
+
 
     /******************* Checks Particle Number Conservation **************/
     /**********************************************************************/
@@ -814,7 +823,7 @@ for (i = 0; i < (number_of_elements - 1) * sw_rtc; i++)
     N_tot_inj += delta_t * sum_inj;
 
 
-    printf("Number of electrons %d: %lf    %lf \n", i, log10(N_tot), log10(N_tot_inj));
+    //printf("Number of electrons %d: %lf    %lf \n", i, log10(N_tot), log10(N_tot_inj));
 
     if isnan(log10(N_tot))
     {
