@@ -83,7 +83,8 @@ sw_rtc = 1;
 
 /************************ Insert initial parameters below ************************/
 /*********************************************************************************/
-double B_upstream, B, UB, electron_injec_slope, BLR_temp, Gamma_jet, plasmoid_avg_num_den, magnetization, half_length;
+double B_upstream, B, UB, electron_injec_slope, BLR_temp, Gamma_jet;
+double plasmoid_avg_num_den, magnetization, half_length, pair_multiplicity;
 
 /* Magnetization of reconnection plasma. */
 magnetization = 10.0;
@@ -91,10 +92,12 @@ magnetization = 10.0;
 half_length = 5.e16;
 /* Magnetic field strength (in G) and magnetic energy desntiy within the radiating blob. */
 B_upstream = 1.5;
-B = sqrt(2.)*B_upstream; 
-UB = B*B/(8.*PI);
+B = sqrt(2.) * B_upstream; 
+UB = B * B / (8. * PI);
 /* Average particle number density per plasmoid. */
 plasmoid_avg_num_den = 9.95375;
+/* Number of pairs to ions within the jet. */
+pair_multiplicity = 1.;
 /* Bulk Lorentz factor of the jet. */
 Gamma_jet = 10.;
 /* Power-law index of injected electron distribution. */
@@ -264,8 +267,14 @@ FILE *gamma_e_save = fopen("results/log_10_electron_Lorentz_factor_array.txt", "
 double ge_min, ge_max, ge[kmax], ge_minus[kmax], ge_plus[kmax], delta_ge[kmax], delta_ge_int, Qe_inj[kmax];
 int k;
 
-/* Minimum & Lorentz factor of injected electron distribution. */
-ge_min = 1.E2; ge_max = 5.E4;
+/* Minimum Lorentz factor of injected electron distribution. Determine from 
+   eqn. A4 in Christie et al. 2019. */
+//ge_min = 1.E2; 
+ge_min = (electron_injec_slope - 2.) * (1. + 4. * magnetization * proton_mass /
+    (plasmoid_avg_num_den * electron_mass * pair_multiplicity)) / (electron_injec_slope - 1.);
+//printf("Minimum Lorentz factor: %f\n", ge_min);
+/* Maximum Lorentz factor of injected electron distribution. */
+ge_max = 5.E4;
 /* Lorentz factor of the electron distribution, 
 evaluated at the half grid pints, and the spacing between 
 each of them as governed by Chiaberge & Ghisellini '99. */
