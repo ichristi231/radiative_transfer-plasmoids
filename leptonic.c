@@ -45,12 +45,38 @@ double photon_annihilation_rate (double o);
 double interpolation(double xx,double x1, double x2, double y1, double y2);  
 
 
-int main() {
+/*********** Reaction Rate of Photon-Photon Pair Production ***********/
+/**********************************************************************/
+/* See eqn. 4.7 in Coppi & Blandford '90. */
+double photon_annihilation_rate(double o)
+{
+    if (o >= 1.) 
+    {
+        return 0.652 * sigmaT * c * log(o) * (o * o - 1.) * (o >= 1.)/pow(o, 3.);
+    }
+    else 
+    {
+        return 0.;
+    }
 
-/* Declarations of physical constants and variables. See below for description. */
-double N0, N_tot, N_tot_inj;
-double junk, junk_1, junk_2;
-int i, sum;
+}
+/**********************************************************************/
+/**********************************************************************/
+
+
+/********************* Linear Interpolation Scheme ********************/
+/**********************************************************************/
+double interpolation(double xx,double x1, double x2, double y1, double y2)
+{
+    return y1 + (xx - x1) * (y2 - y1) / (x2 - x1); 
+}
+/**********************************************************************/
+/**********************************************************************/
+
+
+
+
+int main() {
 
 /*********** Radiative Processes Switches **********/
 /***************************************************/
@@ -148,6 +174,7 @@ BLR_temp = 1.E4;
    the derivative of the volume.
 */
 int number_of_elements = 2356;
+int i = 0;
 
 FILE *plasmoid_Lorentz_file = fopen("plasmoid_properties/plasmoid_1_Lorentz_factor.txt","r");
 FILE *plasmoid_volume_file = fopen("plasmoid_properties/plasmoid_1_volume.txt","r");
@@ -159,7 +186,7 @@ double plasmoid_volume[number_of_elements];
 double plasmoid_volume_derivative[number_of_elements];
 double plasmoid_size[number_of_elements];
 
-for (int i = 0; i < number_of_elements; i++)
+for (i = 0; i < number_of_elements; i++)
 {
     fscanf(plasmoid_Lorentz_file, "%lf", &plasmoid_Lorentz_factor[i]);
     fscanf(plasmoid_volume_file, "%lf", &plasmoid_volume[i]);
@@ -299,6 +326,7 @@ delta_ge_int = log(ge[1]) - log(ge[0]);
 int ict_bound_index[lmax], ict_bound_loss_plus[kmax], ict_bound_loss_minus[kmax];
 int ict_Ne_gamma[lmax][lmax], ict_Ne_gamma_index[lmax][lmax];
 double ict_bound[lmax];
+double sum;
 
 /* Determine the upper bound of the integral in eqn. 44  of Mastichiadis & Kirk '95 for the inverse
 Compton scattering (Thomson regime) of photons off an electron distribution. For those upper bounds,
@@ -487,26 +515,45 @@ for (k = 0; k < kmax; k++)
 /****************************************************************/
 /* Below, we declare all variables, particle species distributions, and all 
 source/loss terms used in the radiative transfer section. Additionally, we
-create txt files used in saveing the temporal evolution of all particle
+create txt files used in saving the temporal evolution of all particle
 species distributions. */
+
+/* Opens files in which to save the log-10 values of the co-moving
+   particle and photon distributions. */
 FILE *nu_L_nu_save = fopen("results/co_moving_nu_l_nu.txt", "w");
 FILE *N_e_save = fopen("results/electron_distribution.txt", "w");
-// FILE *L_gg_ee_save = fopen("results/photon_photon_pair_production_loss_term.txt", "w");
-// FILE *Q_gg_ee_save = fopen("results/photon_photon_pair_production_source_term.txt", "w");
+
+/* Opens file to save the log-10 values of: i) the cumulative number 
+   of injected particles and ii) the total number of particles 
+   determined from the updated electron distribution. This allows
+   to check particle number conservation. */
+FILE *particle_conservation = fopen("results/particle_conservation_check.txt", "w");
+
+/* Declares the particle and photon distributions. */
 double N_e[kmax], N_x[lmax];
-double Q_syn_e[lmax];
+/* Declares all source terms Q. */
+double Q_syn_e[lmax], Q_ICT_e[lmax], Q_ICKN_e[lmax],  Q_gg_ee[kmax];
+/* Declares all loss terms L. */
+double L_ICKN_e[kmax], L_ICT_e_plus[kmax], L_ICT_e_minus[kmax], L_gg_ee[lmax], L_ssa[lmax];
+/* Declares the v2 and v3 coefficients needed to solve the tri-
+   diagonal matrix algorithm for updating the particle distribution
+   (see eqn. 10 in Chiaberge & Ghisellini '99). */
 double v2_e[kmax], v3_e[kmax];
-double Q_ICT_e[lmax], Q_ICKN_e[lmax], L_ICKN_e[kmax], L_ICT_e_plus[kmax], L_ICT_e_minus[kmax];
-double Q_gg_ee[kmax], L_gg_ee[lmax];
-double L_ssa[lmax];
+/* Declartion of the photon escape timescale and plasmoid volume. 
+   These quantities are update each timestep as the plasmoid size
+   changes. */
 double t_esc, vol;
+/* The value of delta_t is determined from the smallest value of the 
+   plasmoid's size (i.e. its initial size when born in the layer). */
 double delta_t = pow(10., plasmoid_size[0]) * half_length / (2. * c);
 
-
-N_tot_inj = 0;
-N_tot = 0;
-double sum_inj, sum_tot;
-double sum_check;
+/* Declaration of quantities needed to compute the number of particles
+   after each time-step. At the end of each timestep, we compare the 
+   cumulative injected particles to the number of particles within the 
+   electron distribution. */
+double N_tot_inj = 0;
+double N_tot = 0;
+double sum_inj = 0;
 
 
 /******* Initialization of all species distributions at initial timestep. *******/
@@ -523,10 +570,13 @@ for (l = 0; l < lmax; l++)
 /********************************************************************************/
 
 
+/* Begin time-loop for radiative calulations of plasmoid. */
 for (i = 0; i < (number_of_elements - 1) * sw_rtc; i++)
 {
-    /*  For each time-step, we compute the escape time, the particle injection rate, and
-        the plasmoid volume. 
+    /************* Update plasmoid quantities *************/
+    /******************************************************/
+    /*  For each time-step, we re-compute the escape time, the particle
+        injection rate, and the plasmoid volume as the plasmoid's size changes. 
     */
     for (k = 0; k < kmax; k++) 
     {
@@ -534,6 +584,9 @@ for (i = 0; i < (number_of_elements - 1) * sw_rtc; i++)
     }
     t_esc = pow(10., plasmoid_size[i]) * half_length / (2. * c);
     vol = pow(10., plasmoid_volume[i]) * pow(half_length, 3.);
+    /******************************************************/
+    /******************************************************/
+
 
 
 	/************* Synchrotron Source Terms (Electron & Proton) *************/
@@ -598,6 +651,7 @@ for (i = 0; i < (number_of_elements - 1) * sw_rtc; i++)
 	/*********************************************************************************/
 
 
+
 	/*********** Electron Inverse Comptron (Klein-Nishina Regime) Loss Term ***********/
 	/**********************************************************************************/
 	/* Determined from eqn. 45 in Mastichiadis & Kirk '95. */
@@ -612,6 +666,7 @@ for (i = 0; i < (number_of_elements - 1) * sw_rtc; i++)
 	}
 	/**********************************************************************************/
 	/**********************************************************************************/
+
 
 
 	/*********** Electron Inverse Comptron (Klein-Nishina Regime) Source Term ***********/
@@ -634,7 +689,6 @@ for (i = 0; i < (number_of_elements - 1) * sw_rtc; i++)
 
 
 
-
 	/*********** Electron Distribution Update Coefficients ***********/
 	/*****************************************************************/
 	/* Coefficients used in updating the electron (& proton) particle distributions
@@ -649,7 +703,6 @@ for (i = 0; i < (number_of_elements - 1) * sw_rtc; i++)
 
 
 
-
 	/************* Photon Distribution Update *************/
 	/******************************************************/
 	for (l = 0; l < lmax; l++)
@@ -661,7 +714,6 @@ for (i = 0; i < (number_of_elements - 1) * sw_rtc; i++)
         {
             N_x[l] = 1.E-200;
         }
-        junk += delta_x*x[l]*N_x[l];
 	}
 	/******************************************************/
 	/******************************************************/
@@ -673,7 +725,6 @@ for (i = 0; i < (number_of_elements - 1) * sw_rtc; i++)
 	/* Determined from eqn. 54 in Mastichiadis & Kirk '95. However, we
 	integrate over the dimensionless frequency range of the soft photons 
 	from 1/x to Max[x], where x is the dimensionless frequency. */
-	junk = 0;
 	for (l = 0; l < lmax; l++)
 	{
 		L_gg_ee[l] = 0;
@@ -685,8 +736,6 @@ for (i = 0; i < (number_of_elements - 1) * sw_rtc; i++)
                 L_gg_ee[l] += (1. / vol) * N_x[l] * delta_x * x[ll] * (N_x[ll]) * photon_annihilation_rate(x[l] * x[ll]);
             }
 		}
-		
-		junk += delta_x*x[l]*L_gg_ee[l];
 	}
 	/***************************************************************/
 	/***************************************************************/
@@ -699,7 +748,6 @@ for (i = 0; i < (number_of_elements - 1) * sw_rtc; i++)
 	integrate over the dimensionless frequency range of the soft photons 
 	from 1/(2*gamma) to Max[x], where x is the dimensionless frequency and 
 	gamma is the Lorentz factor of the produced electron/positron. */
-	junk = 0;
 	for (k = 0; k < kmax; k++)
 	{
 		Q_gg_ee[k] = 0;
@@ -708,15 +756,11 @@ for (i = 0; i < (number_of_elements - 1) * sw_rtc; i++)
 			//Q_gg_ee[k] += (4./vol)*N_x[gg_ee_gamma_bound_source[k]]*delta_x*x[l]*photon_annihilation_rate(2.*x[l]*ge[k])*N_x[l];
 			Q_gg_ee[k] += (4./vol) * delta_x * x[l] * photon_annihilation_rate(2. * x[l] * ge[k])* N_x[l] * (N_x[gg_ee_gamma_bound_source[k] - 1] + (2. * ge[k] - x[gg_ee_gamma_bound_source[k] - 1]) * (N_x[gg_ee_gamma_bound_source[k]] - N_x[gg_ee_gamma_bound_source[k] - 1]) / (x[gg_ee_gamma_bound_source[k]] - x[gg_ee_gamma_bound_source[k] - 1]));
 		}
-
-		// if (k != kmax - 1) {fprintf(Q_gg_ee_save, "%lf ", log10(Q_gg_ee[k] + 1.) );}
-		// else {fprintf(Q_gg_ee_save, "%lf\n", log10(Q_gg_ee[k] + 1.) );}
-
-		junk += delta_ge_int * ge[k] * Q_gg_ee[k];
 	}
-	//printf("Q_gg_ee = %lf \n", log10(junk));
 	/*****************************************************************/
 	/*****************************************************************/
+
+
 
 	/************* Photon Distribution Update *************/
 	/******************************************************/
@@ -732,9 +776,9 @@ for (i = 0; i < (number_of_elements - 1) * sw_rtc; i++)
 	/******************************************************/
 
 
+
 	/************* Electron Distribution Update *************/
 	/********************************************************/
-    junk = 0;
 	for (k = kmax - 1; k >= 0; k--)
 	{
 		if (k == kmax - 1) 
@@ -766,6 +810,7 @@ for (i = 0; i < (number_of_elements - 1) * sw_rtc; i++)
 	/********************************************************/
 
 
+
 	/************* Synchrotron Self Absorption *************/
 	/*******************************************************/
 	/* Here, we follow the prescription for the loss term due to synchrotron
@@ -787,6 +832,7 @@ for (i = 0; i < (number_of_elements - 1) * sw_rtc; i++)
 	}
 	/*******************************************************/
 	/*******************************************************/
+
 
 
 	/************* Photon Distribution Update *************/
@@ -815,11 +861,6 @@ for (i = 0; i < (number_of_elements - 1) * sw_rtc; i++)
 	/******************************************************/
 
 
-	if(i % 100 == 0) 
-    {
-        printf("Finished %d out of %d. \n", i, number_of_elements);
-    }
-
 
     /******************* Checks Particle Number Conservation **************/
     /**********************************************************************/
@@ -831,53 +872,27 @@ for (i = 0; i < (number_of_elements - 1) * sw_rtc; i++)
     }
     N_tot_inj += delta_t * sum_inj;
 
+    fprintf(particle_conservation, "%lf %lf\n", log10(N_tot_inj), log10(N_tot));
+    /**********************************************************************/
+    /**********************************************************************/
 
-    //printf("Number of electrons %d: %lf    %lf \n", i, log10(N_tot), log10(N_tot_inj));
 
-    if isnan(log10(N_tot))
+
+    // Prints the interation value every 100 interations.
+    if(i % 100 == 0) 
     {
-        break;
+        printf("Finished %d out of %d. \n", i, number_of_elements);
     }
-    /**********************************************************************/
-    /**********************************************************************/
 }
+
 fclose(nu_L_nu_save); 
 fclose(N_e_save); 
-//fclose(L_gg_ee_save); fclose(Q_gg_ee_save); 
+fclose(particle_conservation);
 /************************************************************************/
 /******************** End Radiative Transfer Section ********************/
 
 return 0;
 }
-
-
-/*********** Reaction Rate of Photon-Photon Pair Production ***********/
-/**********************************************************************/
-/* See eqn. 4.7 in Coppi & Blandford '90. */
-double photon_annihilation_rate(double o)
-{
-	if (o >= 1.) 
-    {
-        return 0.652 * sigmaT * c * log(o) * (o * o - 1.) * (o >= 1.)/pow(o, 3.);
-    }
-	else 
-    {
-        return 0.;
-    }
-
-}
-/**********************************************************************/
-/**********************************************************************/
-
-
-/********************* Linear Interpolation Scheme ********************/
-/**********************************************************************/
-double interpolation(double xx,double x1, double x2, double y1, double y2)
-{
-    return y1 + (xx - x1) * (y2 - y1) / (x2 - x1); 
-}
-/**********************************************************************/
-/**********************************************************************/
 
 
 
