@@ -14,7 +14,7 @@ All files ending with the text listed above contain the production rate of diffe
 
 # Citations
 
-[1] Rybicki G. B., Lightman A. P., 1986, Radiative Processes in Astrophysics. p. 400
+[1] Rybicki G. B., Lightman A. P., 1986, Radiative Processes in Astrophysics. p. 400 (https://ui.adsabs.harvard.edu/abs/2016MNRAS.462.3325P/abstract)
 
 [2] Kelner, S. R., & Aharonian, F. A. 2008, PhRvD, 78, 034013
-(https://arxiv.org/pdf/0803.0688.pdf)
+(https://ui.adsabs.harvard.edu/abs/2008PhRvD..78c4013K/abstract)
