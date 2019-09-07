@@ -1,20 +1,22 @@
-# Required Tables
-This directory contains text files needed to compute the different production or loss rates for a variety of radiative processes. Include in here is the following (with appropriate reference and description):
+# Plasmoid Properties
+This directory contains text files of the plasmoid properties required to calculate the particle evolution and resulting photon spectrum. These properties are the result of particle-in-cell (PIC) simulations of electron-positron pair plasmas, for a plasma magnetization of 10, as reported in `Sironi L., Giannios D., Petropoulou M., 2016, MNRAS, 462, 48` [1]. As such, any use of these results should require this citation as well as the ones listed below.
 
-i) `single_part_emissivity_x_store.txt` & `single_part_emissivity_f_store.txt`:
+Contained within this directory are the plamoid's:
 
-The first file stores the log-10 values of the ratio of the photon frequency to the critical synchrotron frequency (see eqn. 6.17c in [1]) used in the definition of `F(x)` (eqn. 6.31c in [1]) for the single-particle synchrotron emissivity (eqn. 6.33 in [1]). The second file stores the log-10 values of `F(x)` (eqn. 6.31c in [1]) for the values store in `x`. 
+i) Transverse diameter normalized to the half-length of the reconnection layer [1]. This is used to compute the photon escape timescale and the timestep `delta_t` [2].
 
-The values in `x` are chosen such that the code will not need to manually calculate `F(x)`. Instead, we interpolate `F(x)` such that we can maually select the values from the array.
+ii) Co-moving (i.e. in the rest frame of the plasmoid) volume (for definition, see Sec. 2 [2]) normalized to the half-length of the reconnection layer cubed [1]. This quantitiy is used in several source and loss rate terms for photons and particles. 
 
-ii) `..._production_numerical_values_photo_hadronic_interactions.txt`:
+iii) The co-moving temporal derivative of the plasmoid's volume. This quantity is used to set the injection rate of particles (see eqn. 5 in [2]).
 
-All files ending with the text listed above contain the production rate of differen particle species as produced from photo-hadronic interactions (see [2] for more detail). The `...` can contain any of the following particle species: `electron_neutrino`, `anti-electron_neutrino`, `muon_neutrino`, `anti_muon_neutrino`, `electron`, `positron`, or `photon`. Each of these text files contain four columns, with their variable representation described in detail in [2]. We note, that the fourth and final column are the log-10 of the production rate of that particular species. Moreover, these will only be used in the lepto_hadronic.c version of the code.
+iv) Lorentz factor as measured in the reconnection layer's rest frame (for additional description, see [3]). During the radiative transfer caculation, this quantity is used in the particle injection rate (see eqn. 5 in [2]) and for determining the co-moving energy of any photon fields external to the plasmoid and/or relativistic blazar jet (e.g. Broad-line region, Infrared Torus).
+
 
 
 # Citations
 
-[1] Rybicki G. B., Lightman A. P., 1986, Radiative Processes in Astrophysics. p. 400
+[1] Sironi L., Giannios D., Petropoulou M., 2016, MNRAS, 462, 48 (https://ui.adsabs.harvard.edu/abs/2016MNRAS.462...48S/abstract)
 
-[2] Kelner, S. R., & Aharonian, F. A. 2008, PhRvD, 78, 034013
-(https://arxiv.org/pdf/0803.0688.pdf)
+[2] Christie I. M., Petropoulou M., Sironi L., Giannios D., 2019, MNRAS, 482, 65 (https://ui.adsabs.harvard.edu/abs/2019MNRAS.482...65C/abstract)
+
+[3] Petropoulou M., Giannios D., Sironi L., 2016, MNRAS, 462, 3325 (https://ui.adsabs.harvard.edu/abs/2016MNRAS.462.3325P/abstract)
