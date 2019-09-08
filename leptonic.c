@@ -19,6 +19,7 @@ ii) Chiaberge & Ghisellini '99 (MNRAS, 306): http://adsabs.harvard.edu/abs/1999M
 iii) Ghisellini & Madau '96 (MNRAS, 280): http://adsabs.harvard.edu/abs/1996MNRAS.280...67G
 iv) Mastichiadis & Kirk '95 (A&A, 295): http://adsabs.harvard.edu/abs/1995A%26A...295..613M
 v) Rybicki & Lightman '86: http://adsabs.harvard.edu/abs/1986rpa..book.....R
+vi) Sironi et al. '16: https://ui.adsabs.harvard.edu/abs/2016MNRAS.462...48S/abstract
 
 */
 
@@ -34,7 +35,7 @@ v) Rybicki & Lightman '86: http://adsabs.harvard.edu/abs/1986rpa..book.....R
 #define sigmaT 6.6524E-25
 /* Number of grid points in the electron energy range. */
 #define kmax 300
-/* Number of grid points in the photon energy/frequency range. */
+/* Number of grid points in the photon frequency range. */
 #define lmax 300
 
 /* Declaration of photon-photon pair production reaction 
@@ -51,7 +52,7 @@ double photon_annihilation_rate(double o)
 {
     if (o >= 1.) 
     {
-        return 0.652 * sigmaT * c * log(o) * (o * o - 1.) * (o >= 1.) / pow(o, 3.);
+        return 0.652 * sigmaT * c * log(o) * (o * o - 1.) / pow(o, 3.);
     }
     else 
     {
@@ -115,7 +116,10 @@ double plasmoid_avg_num_den, magnetization, half_length, pair_multiplicity;
 magnetization = 10.0;
 /* Half-length of the reconnection layer in cm. */
 half_length = 5.e16;
-/* Magnetic field strength (in G) and magnetic energy desntiy within the radiating blob. */
+/* Magnetic field strength (in G) and magnetic energy desntiy within the radiating 
+   blob. The magnetic field far upstream from the reconnecting plasma is set first.
+   The magnetic field in the plasmoid is then sqrt(2) times larger (see Fig. 5 in 
+   Sironi et al. 2016). */
 B_upstream = 1.5;
 B = sqrt(2.) * B_upstream; 
 UB = B * B / (8. * PI);
