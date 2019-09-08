@@ -109,10 +109,12 @@ sw_rtc = 1;
 
 /************************ Insert initial parameters below ************************/
 /*********************************************************************************/
-double B_upstream, B, UB, electron_injec_slope, BLR_temp, Gamma_jet;
+double B_upstream, B, UB, electron_injec_slope, BLR_temp, Gamma_jet, ge_max;
 double plasmoid_avg_num_den, magnetization, half_length, pair_multiplicity;
 
-/* Magnetization of un-reconnected (upstream) plasma. */
+/* Magnetization of un-reconnected (upstream) plasma. Defined as the ratio of the
+   magnetic energy density to particle eneregy density far upstream from the 
+   reconnection layer. */
 magnetization = 10.0;
 /* Half-length of the reconnection layer in cm. */
 half_length = 5.e16;
@@ -133,48 +135,27 @@ Gamma_jet = 10.;
 electron_injec_slope = 2.1;
 /* Characteristic temperature in Kelvin of blackbody external radiation field (if applicable). */
 BLR_temp = 1.E4;
+/* Maximum Lorentz factor of injected electron distribution. */
+ge_max = 5.E4;
 /*********************************************************************************/
 /*********************************************************************************/
 
 
 /********** Importing Plasmoid Properties from PIC Simulations **********/
 /************************************************************************/
-/* The overall goal of this sections is to import plasmoid properties from PIC 
-   simulations of reconnection. For the radiative transfer, we require: the
-   plasmoids final transverse size, it's volume, the derivative of the volume,
-   and its Lorentz factor.
+/* Here, we import the plasmoid properties, derived from PIC results (Sironi
+   et al. '16'), required to evolve the particle distribution within a 
+   plasmoid and compute its photon spectrum. The quantities required are: 
+   i) plasmoid's tranverse size (i.e. perpendicular to the plasmoid's 
+   direction of motion) normalized to the half-length of the reconnection
+   layer
+   ii) plasmoid's Lorentz factor as measured in the reconnection frame.
+   iii) plasmoid's co-moving volume 
+   iv) the co-moving temporal derivative of the plasmoid's co-moving
+   volume (normalized the the half-length of the reconnection layer
+   cubed)
 
-   Because the size of these arrays varies from plasmoid to plasmoid, we first,
-   read in the plasmoid's size (normalized to the half length of the reconnection
-   layer) array while allocating a small amount of memory. We read through the 
-   array, updating the memory as we go. Once, finished, we have the size of the 
-   size need when importing the other arrays for a plasmoid.  
-
-*/
-// FILE *plamoid_size_file;
-
-// int size_of_file = 2000;
-// int number_of_elements = 0;
-// char line_store[100];
-// double *plasmoid_size = malloc(size_of_file);
-// plamoid_size_file = fopen("plasmoid_1_transverse_size.txt","r");
-
-// while((fgets(line_store, 100, plamoid_size_file)) != NULL)
-// {
-//     if(number_of_elements >= size_of_file - 1)
-//     {
-//         /* Make the size of the larger. */
-//         size_of_file += 10;
-//         plasmoid_size = realloc(plasmoid_size, size_of_file);
-//     }
-
-//     plasmoid_size[number_of_elements++] = atof(line_store);
-// }
-
-// fclose(plamoid_size_file);  
-
-/* We next read in the plasmoid's Lorentz factor, volume, and
-   the derivative of the volume.
+   Note that all quantities read in are the log-10 values. 
 */
 int number_of_elements = 2356;
 int i = 0;
@@ -206,7 +187,7 @@ fclose(plamoid_size_file);
 /************************************************************************/
 
 
-/**************** Physcial Constants ***************/
+/**************** Physical Constants ***************/
 /***************************************************/
 double electron_mass, proton_mass, electric_charge, plank_const, boltzman_const;
 
@@ -257,7 +238,7 @@ for (l = 0; l < lmax; l++)
     fprintf(nu_save, "%lf\n", log10(nu[l]));
 }
 fclose(nu_save);
-/* The difference of the log-space spcaing between photon energies.
+/* The difference of the log-space spacing between photon energies.
 This will be used when integrating over the photon energy 
 (e.g. inverse Compton scattering). */
 delta_x = log(x[1]) - log(x[0]);
@@ -294,17 +275,14 @@ measured in the co-moving frame of the emitting region. */
 /***************************************************************************/
 FILE *gamma_e_save = fopen("leptonic_version_results/log_10_electron_Lorentz_factor_array.txt", "w");
 
-double ge_min, ge_max, ge[kmax], ge_minus[kmax], ge_plus[kmax], delta_ge[kmax], delta_ge_int, Qe_inj[kmax];
+double ge_min, ge[kmax], ge_minus[kmax], ge_plus[kmax], delta_ge[kmax], delta_ge_int, Qe_inj[kmax];
 int k;
 
 /* Minimum Lorentz factor of injected electron distribution. Determine from 
-   eqn. A4 in Christie et al. 2019. */
-//ge_min = 1.E2; 
+   eqn. A4 in Christie et al. 2019. */ 
 ge_min = (electron_injec_slope - 2.) * (1. + 4. * magnetization * proton_mass /
     (plasmoid_avg_num_den * electron_mass * pair_multiplicity)) / (electron_injec_slope - 1.);
-//printf("Minimum Lorentz factor: %f\n", ge_min);
-/* Maximum Lorentz factor of injected electron distribution. */
-ge_max = 5.E4;
+
 /* Lorentz factor of the electron distribution, 
 evaluated at the half grid pints, and the spacing between 
 each of them as governed by Chiaberge & Ghisellini '99. */
@@ -316,7 +294,7 @@ for (k = 1; k < kmax + 1; k++){
     fprintf(gamma_e_save, "%lf\n", log10(ge[k - 1]));
 }
 fclose(gamma_e_save);
-/* The difference of the log-space spcaing between particle energies.
+/* The difference of the log-space spacing between particle energies.
 This will be used when integrating over the particle Lorentz factor 
 (e.g. synchrotron emission). */
 delta_ge_int = log(ge[1]) - log(ge[0]);
