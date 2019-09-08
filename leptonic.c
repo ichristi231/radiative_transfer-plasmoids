@@ -112,7 +112,7 @@ sw_rtc = 1;
 double B_upstream, B, UB, electron_injec_slope, BLR_temp, Gamma_jet;
 double plasmoid_avg_num_den, magnetization, half_length, pair_multiplicity;
 
-/* Magnetization of reconnection plasma. */
+/* Magnetization of un-reconnected (upstream) plasma. */
 magnetization = 10.0;
 /* Half-length of the reconnection layer in cm. */
 half_length = 5.e16;
