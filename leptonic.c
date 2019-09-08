@@ -243,7 +243,7 @@ fclose(xt); fclose(Ft);
 
 /************ Photon Frequency Array in Hz (& Dimensionless Frequency) ************/
 /**********************************************************************************/
-FILE *nu_save = fopen("results/log_10_photon_frequency_array.txt", "w");
+FILE *nu_save = fopen("leptonic_version_results/log_10_photon_frequency_array.txt", "w");
 int l, ll;
 double nu[lmax], x[lmax], delta_x;
 
@@ -289,7 +289,7 @@ measured in the co-moving frame of the emitting region. */
 
 /*********** Electron Injection & Energy Distribution Parameters ***********/
 /***************************************************************************/
-FILE *gamma_e_save = fopen("results/log_10_electron_Lorentz_factor_array.txt", "w");
+FILE *gamma_e_save = fopen("leptonic_version_results/log_10_electron_Lorentz_factor_array.txt", "w");
 
 double ge_min, ge_max, ge[kmax], ge_minus[kmax], ge_plus[kmax], delta_ge[kmax], delta_ge_int, Qe_inj[kmax];
 int k;
