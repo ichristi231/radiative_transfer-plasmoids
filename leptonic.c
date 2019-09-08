@@ -1,15 +1,15 @@
 /* This is the leptonic version of a radiative transfer code developed by I. Christie and M. Petropoulou.
 
 This version uses the area-averaged quantities of plasmoids as obtained from 
-particle-in-cell (PIC) simulations of PIC. Given several initial free conditions (e.g.
+particle-in-cell (PIC) simulations of relativistic magnetic reconnection. Given several initial free conditions (e.g.
 half length of the reconnection layer, magentic field upstream from the layer), it
 computes the co-moving spectra of a single plasmoid. The code will save the 
-following to the 'results' directory: i) log10 of thephoton frequency values (in Hz),
+following to the 'results' directory: i) log10 of the photon frequency values (in Hz),
 ii) log10 of the particle Lorentz factors, iii) log10 of the temporal evolution of the particle 
 distribution, iv) log10 of the temporal evolution of the photon distribution, and v) a check 
 that the particle number within the plasmoid is conserved.
 
-Different processes can be shut off by use of the switches presented below. 
+Different processes can be switched on and off by use of the flags presented below. 
 
 Throughout this work, we have adopted the work of several studies which are referenced
 below and which are referenced with appropriate eqn. # throughout the code.
@@ -33,9 +33,9 @@ vi) Sironi et al. '16: https://ui.adsabs.harvard.edu/abs/2016MNRAS.462...48S/abs
 #define c 3.0E10
 /* Thomson cross section in cm^2. */
 #define sigmaT 6.6524E-25
-/* Number of grid points in the electron energy range. */
+/* Number of grid points in the electron energy range (in log space). */
 #define kmax 300
-/* Number of grid points in the photon frequency range. */
+/* Number of grid points in the photon frequency range (in log space). */
 #define lmax 300
 
 /* Declaration of photon-photon pair production reaction 
