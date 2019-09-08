@@ -520,14 +520,14 @@ species distributions. */
 
 /* Opens files in which to save the log-10 values of the co-moving
    particle and photon distributions. */
-FILE *nu_L_nu_save = fopen("results/co_moving_nu_l_nu.txt", "w");
-FILE *N_e_save = fopen("results/electron_distribution.txt", "w");
+FILE *nu_L_nu_save = fopen("leptonic_version_results/co_moving_nu_l_nu.txt", "w");
+FILE *N_e_save = fopen("leptonic_version_results/electron_distribution.txt", "w");
 
 /* Opens file to save the log-10 values of: i) the cumulative number 
    of injected particles and ii) the total number of particles 
    determined from the updated electron distribution. This allows
    to check particle number conservation. */
-FILE *particle_conservation = fopen("results/particle_conservation_check.txt", "w");
+FILE *particle_conservation = fopen("leptonic_version_results/particle_conservation_check.txt", "w");
 
 /* Declares the particle and photon distributions. */
 double N_e[kmax], N_x[lmax];
