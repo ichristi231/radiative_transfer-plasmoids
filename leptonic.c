@@ -81,7 +81,7 @@ int main() {
 /*********** Radiative Processes Switches **********/
 /***************************************************/
 /* Below, we create switches which permits to turn on/off a certain 
-   radiative procees. This can be used to test the code or explore 
+   radiative process. This can be used to test the code or explore 
    the emission from one or several different processes (named below). 
    If the switch is equal to unity, then the process is on, if zero, 
    it's off. */
