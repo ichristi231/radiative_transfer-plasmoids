@@ -1,4 +1,4 @@
-/* This is the leptonic version of a radiative transfer code developed by I. Christie and M. Petropoulou.
+/* This is the leptonic version of a radiative transfer code developed by I. Christie (in collaboration with M. Petropoulou).
 
 This version uses the area-averaged quantities of plasmoids as obtained from 
 particle-in-cell (PIC) simulations of relativistic magnetic reconnection. Given several initial free conditions (e.g.
