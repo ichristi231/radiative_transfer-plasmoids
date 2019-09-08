@@ -6,8 +6,6 @@ i) Christie I. M., Petropoulou M., Sironi L., Giannios D., 2019, MNRAS, 482, 65 
 
 ii) Sironi L., Giannios D., Petropoulou M., 2016, MNRAS, 462, 48 (https://ui.adsabs.harvard.edu/abs/2016MNRAS.462...48S/abstract)
 
-iii) Petropoulou M., Giannios D., Sironi L., 2016, MNRAS, 462, 3325 (https://ui.adsabs.harvard.edu/abs/2016MNRAS.462.3325P/abstract)
-
 To run the contents of the code, in the directoy containing `leptonic.c` type `gcc leptonic.c -o leptonic -O3` to compile and `./leptonic` to run.
 
 
@@ -27,8 +25,4 @@ iv) Writes to a file the log10 of the following: `particle distribution`, `parti
 
 # Citations
 
-i) 
-
-ii)
-
-iii)
+Petropoulou M., Giannios D., Sironi L., 2016, MNRAS, 462, 3325 (https://ui.adsabs.harvard.edu/abs/2016MNRAS.462.3325P/abstract)
