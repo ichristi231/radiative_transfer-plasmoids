@@ -13,7 +13,7 @@ To run the contents of the code, in the directoy containing `leptonic.c` type `g
 # Introduction
 An over-arching description of the code is as follows:
 
-i) Set up the initial conditions required to compute the emission from the evolving particle distribution. For this scenario, it includes: `magnetic field of plasma far upstream from the reconnection layer` (see Fig. 5 in [6]), `half-length of the reconnection layer` (see []), `slope of the injected particle distribution` (see eqn. 5 and table in [3]), `maximum Lorentz factor of the injected particle distribution` (see Appendix in [3]). 
+i) Set up the initial conditions required to compute the emission from the evolving particle distribution. For this scenario, it includes: `magnetic field of plasma far upstream from the reconnection layer` (see Fig. 5 in [6]), `half-length of the reconnection layer` (see Sec 2 and table 1 [3]), `slope of the injected particle distribution` (see eqn. 5 and table 1 in [3]), `maximum Lorentz factor of the injected particle distribution` (see Appendix A in [3]). 
 
 ii) Compute all source and loss rate terms for the evolving particle and photon distributions. 
 
