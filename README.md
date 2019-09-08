@@ -23,6 +23,19 @@ iv) Writes to a file the log10 of the following: `particle distribution`, `parti
 
 # More to Come
 
+Development of a lepto-hadronic code which allows for the computation of the potential neutrino flux from blazars!
+
 # Citations
 
+Chang, J.S. & Cooper, G., 1970, Journal of Computational Physics 6, 1 (https://ui.adsabs.harvard.edu/abs/1970JCoPh...6....1C/abstract)
+
+Chiaberge M., Ghisellini G., 1999, MNRAS, 306, 551 (https://ui.adsabs.harvard.edu/abs/1999MNRAS.306..551C/abstract)
+
+Christie I. M., Petropoulou M., Sironi L., Giannios D., 2019, MNRAS, 482, 65 (https://ui.adsabs.harvard.edu/abs/2019MNRAS.482...65C/abstract)
+
 Petropoulou M., Giannios D., Sironi L., 2016, MNRAS, 462, 3325 (https://ui.adsabs.harvard.edu/abs/2016MNRAS.462.3325P/abstract)
+
+Press, W.H. et al., 1989, Numerical Recipes in Fortran, Cambridge University Press (https://ui.adsabs.harvard.edu/abs/1989nrpa.book.....P/abstract)
+
+Sironi L., Giannios D., Petropoulou M., 2016, MNRAS, 462, 48 (https://ui.adsabs.harvard.edu/abs/2016MNRAS.462...48S/abstract)
+
