@@ -424,7 +424,7 @@ int x_index;
 /* Unitless constant which belongs in front of the electron synchrotron cooling rate. */
 const_syn_e = 4. * sigmaT * UB / (3. * electron_mass *c);
 
-/* Below, we deteremine the electron single particle emissivity. */
+/* Below, we determine the electron single particle synchrotron emissivity. */
 for (l = 0; l < lmax; l++)
 {
     for (k = 0; k < kmax; k++)
@@ -453,7 +453,7 @@ for (l = 0; l < lmax; l++)
 int gg_ee_gamma_bound_source[kmax], gg_ee_bound_loss[lmax], gg_ee_bound_source[kmax];
 
 /* Below, we determine the index in the dimensionless frequency array in which two times the 
-electron Lorentz factor is closestes to the dimensionless frequency. This is used to evaluate the
+electron Lorentz factor is closest to the dimensionless frequency. This is used to evaluate the
 photon distribution at two times the electron Lorentz factor as stated in eqn. 57 in 
 Mastichiadis & Kirk '95. */
 for (k = 0; k < kmax; k++)
@@ -521,7 +521,7 @@ double L_ICKN_e[kmax], L_ICT_e_plus[kmax], L_ICT_e_minus[kmax], L_gg_ee[lmax], L
    (see eqn. 10 in Chiaberge & Ghisellini '99). */
 double v2_e[kmax], v3_e[kmax];
 /* Declartion of the photon escape timescale and plasmoid volume. 
-   These quantities are update each timestep as the plasmoid size
+   These quantities are updated each timestep as the plasmoid size
    changes. */
 double t_esc, vol;
 /* The value of delta_t is determined from the smallest value of the 
