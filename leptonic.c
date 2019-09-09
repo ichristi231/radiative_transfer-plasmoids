@@ -1,25 +1,47 @@
-/* This is the leptonic version of a radiative transfer code developed by I. Christie (in collaboration with M. Petropoulou).
+/* 
+This is the leptonic version of a radiative transfer code developed by I. Christie 
+(in collaboration with M. Petropoulou). If using this code, make reference to the
+following:
+
+i) Christie I. M., Petropoulou M., Sironi L., Giannios D., 2019, MNRAS, 482, 65 
+(https://ui.adsabs.harvard.edu/abs/2019MNRAS.482...65C/abstract)
+
+ii) Sironi L., Giannios D., Petropoulou M., 2016, MNRAS, 462, 48 
+(https://ui.adsabs.harvard.edu/abs/2016MNRAS.462...48S/abstract)
 
 This version uses the area-averaged quantities of plasmoids as obtained from 
-particle-in-cell (PIC) simulations of relativistic magnetic reconnection. Given several initial free conditions (e.g.
-half length of the reconnection layer, magentic field upstream from the layer), it
-computes the co-moving spectra of a single plasmoid. The code will save the 
+particle-in-cell (PIC) simulations of relativistic magnetic reconnection. Given several 
+initial free conditions (e.g. half length of the reconnection layer, magentic field upstream 
+from the layer), it computes the co-moving spectra of a single plasmoid. The code will save the 
 following to the 'results' directory: i) log10 of the photon frequency values (in Hz),
 ii) log10 of the particle Lorentz factors, iii) log10 of the temporal evolution of the particle 
 distribution, iv) log10 of the temporal evolution of the photon distribution, and v) a check 
 that the particle number within the plasmoid is conserved.
 
-Different processes can be switched on and off by use of the flags presented below. 
+Different processes can be switched on and off by use of the flags presented at the 
+beginning of the main() function. 
 
 Throughout this work, we have adopted the work of several studies which are referenced
 below and which are referenced with appropriate eqn. # throughout the code.
 
-i) Coppi & Blandford '245 (MNRAS, 245): http://adsabs.harvard.edu/abs/1990MNRAS.245..453C
-ii) Chiaberge & Ghisellini '99 (MNRAS, 306): http://adsabs.harvard.edu/abs/1999MNRAS.306..551C
-iii) Ghisellini & Madau '96 (MNRAS, 280): http://adsabs.harvard.edu/abs/1996MNRAS.280...67G
-iv) Mastichiadis & Kirk '95 (A&A, 295): http://adsabs.harvard.edu/abs/1995A%26A...295..613M
-v) Rybicki & Lightman '86: http://adsabs.harvard.edu/abs/1986rpa..book.....R
-vi) Sironi et al. '16: https://ui.adsabs.harvard.edu/abs/2016MNRAS.462...48S/abstract
+i) Christie I. M., Petropoulou M., Sironi L., Giannios D., 2019, MNRAS, 482, 65 
+(https://ui.adsabs.harvard.edu/abs/2019MNRAS.482...65C/abstract)
+
+ii) Coppi & Blandford '90 (MNRAS, 245) 
+(https://ui.adsabs.harvard.edu/abs/1990MNRAS.245..453C/abstract)
+
+iii) Chiaberge & Ghisellini '99 (MNRAS, 306)
+(http://adsabs.harvard.edu/abs/1999MNRAS.306..551C
+iii) Ghisellini & Madau '96 (MNRAS, 280): http://adsabs.harvard.edu/abs/1996MNRAS.280...67G)
+
+iv) Mastichiadis & Kirk '95 (A&A, 295) 
+(http://adsabs.harvard.edu/abs/1995A%26A...295..613M)
+
+v) Rybicki & Lightman '86
+(http://adsabs.harvard.edu/abs/1986rpa..book.....R)
+
+vi) Sironi et al. '16
+(https://ui.adsabs.harvard.edu/abs/2016MNRAS.462...48S/abstract)
 
 */
 
@@ -191,14 +213,14 @@ fclose(plamoid_size_file);
 /***************************************************/
 double electron_mass, proton_mass, electric_charge, plank_const, boltzman_const;
 
-/* Electron, proton, & pion mass in g. */
+/* Electron & proton mass in g. */
 electron_mass = 9.10938E-28; 
 proton_mass = 1.6726219E-24; 
 /* Electron charge in CGS. */
 electric_charge = 4.8032068E-10; 
 /* Plank's constant in erg s. */
 plank_const = 6.6260755E-27;
-/* boltzman_constman constant in erg K^(-1). */
+/* Boltzman_constman constant in erg K^(-1). */
 boltzman_const = 1.380658E-16;
 /***************************************************/
 /***************************************************/
@@ -208,8 +230,9 @@ boltzman_const = 1.380658E-16;
 /************************ Import x & F(x) tables below ************************/
 /******************************************************************************/
 /* Below, we declare the tables of the x and F(x) values as governed by Rybicki & Lightman '86 
-eqn. 6.31c used for the single particle synchrotron emissivity. Note the range of the x values 
-and that both files are in log-10 space. */
+eqn. 6.31c used for the single particle synchrotron emissivity. Note that the x values
+range (in log-10 space) from -20 to 2. Beyond these limits, F(x) evaluates roughly to zero.
+Note that both files are in log-10 space. */
 double x_store_table[400], f_store_table[400];
 
 FILE *xt; FILE *Ft;
@@ -227,6 +250,9 @@ fclose(xt); fclose(Ft);
 
 /************ Photon Frequency Array in Hz (& Dimensionless Frequency) ************/
 /**********************************************************************************/
+/* Below, we introduce the photon frequency array and the dimensionless photon 
+   frequency, defined as the ratio of the photon energy to rest mass electron 
+   energy. */
 FILE *nu_save = fopen("leptonic_version_results/log_10_photon_frequency_array.txt", "w");
 int l, ll;
 double nu[lmax], x[lmax], delta_x;
@@ -333,9 +359,9 @@ for (l = 0; l < lmax; l++)
 }
 
 /* Below, we determine the index of the dimensionless photon frequency array which is closest
- to the value of 3/4*gamma, i.e. the upper bound of the photon energy density in eqn. 43 of Mastichiadis
- & Kirk '95. We find the values, evaluated at the half-mesh points in the electron energy density. These
- indices will then be used as the limit in which the summation (integration) is carried to. */
+   to the value of 3/4*gamma, i.e. the upper bound of the photon energy density in eqn. 43 of Mastichiadis
+   & Kirk '95. We find the values, evaluated at the half-mesh points in the electron energy density. These
+   indices will then be used as the limit in which the summation (integration) is carried to. */
 for (k = 0; k < kmax; k++)
 {
 	ict_bound_loss_plus[k] = 0; 
@@ -424,7 +450,12 @@ int x_index;
 /* Unitless constant which belongs in front of the electron synchrotron cooling rate. */
 const_syn_e = 4. * sigmaT * UB / (3. * electron_mass *c);
 
-/* Below, we determine the electron single particle synchrotron emissivity. */
+/* Below, we determine the electron single particle synchrotron emissivity. In doing so,
+   we first compute the value of x (i.e. ratio of photon frequency to the critical 
+   synchrotron cooling frequency) using our values of the photon frequency nu and the
+   electron Lorentz factor gamma. We then, for every value of x which falls in the range
+   of the imported x-table (see above), we compute the synchroton emissivity using eqn. 6.33
+   in Rybicki & Lightman '86. */
 for (l = 0; l < lmax; l++)
 {
     for (k = 0; k < kmax; k++)
