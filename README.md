@@ -19,7 +19,7 @@ ii) Computes all source and loss rate terms for the evolving particle and photon
 
 iii) Numerically solves the continuity equation for the evolving the particle and photon distributions. Solving the former requires the use of the tri-diagonal matrix algorithm [1, 2, 5].
 
-iv) Writes to a file the log10 of the following: `particle distribution`, `particle Lorentz factors`, `photon frequencies` (in Hz), and `photon spectrum` (i.e. `nu L_nu` in erg/s).
+iv) Writes to a file the log10 of the following: `particle distribution` (i.e. `gamma^p * N(gamma, t)`, where `p` is the slope of the injected particle distribution), `particle Lorentz factors`, `photon frequencies` (in Hz), and `photon spectrum` (i.e. `nu L_nu` in erg/s).
 
 # More to Come
 
