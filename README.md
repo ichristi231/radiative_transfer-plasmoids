@@ -8,6 +8,8 @@ ii) Sironi L., Giannios D., Petropoulou M., 2016, MNRAS, 462, 48 (https://ui.ads
 
 To run the contents of the code, in the directory containing `leptonic.c` type `gcc leptonic.c -o leptonic -O3` to compile and `./leptonic` to run.
 
+# Possible Issues
+
 
 
 # Introduction
