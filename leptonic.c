@@ -571,16 +571,25 @@ double N_tot_inj = 0;
 double N_tot = 0;
 double sum_inj = 0;
 
+/* Declaration of the plasmoid's Lorentz factor as measured in the
+   rest frame of the SMBH. This quantity is used to boost the energy
+   densities of photon fields external to the jet. */
+double plasmoid_Lorentz_factor_SMBH = 0;
+
+/* Declaring the photon distribution external radiation fields. */
+double N_external[lmax];
+
 
 /******* Initialization of all species distributions at initial timestep. *******/
 /********************************************************************************/
 for (k = 0; k < kmax; k++)
 {
-    N_e[k] = 0;
+  N_e[k] = 0;
 } 
 for (l = 0; l < lmax; l++) 
 {
-    N_x[l] = 0;
+  N_x[l] = 0;
+  N_external[l] = 0;
 }
 /********************************************************************************/
 /********************************************************************************/
@@ -589,35 +598,50 @@ for (l = 0; l < lmax; l++)
 /* Begin time-loop for radiative calulations of plasmoid. */
 for (i = 0; i < (number_of_elements - 1) * sw_rtc; i++)
 {
-    /************* Update plasmoid quantities *************/
-    /******************************************************/
-    /*  For each time-step, we re-compute the escape time, the particle
-        injection rate, and the plasmoid volume as the plasmoid's size changes. 
-    */
-    for (k = 0; k < kmax; k++) 
+  /************* Update plasmoid quantities *************/
+  /******************************************************/
+  /*  For each time-step, we re-compute the escape time, the particle
+      injection rate, and the plasmoid volume as the plasmoid's size changes. 
+  */
+  for (k = 0; k < kmax; k++) 
+  {
+    Qe_inj[k] = (ge[k] >= ge_min)*(1. - electron_injec_slope) * pow(ge[k], -electron_injec_slope) / 
+    (pow(ge_max, 1. - electron_injec_slope) - pow(ge_min, 1. - electron_injec_slope)) * (10. * 
+      plasmoid_avg_num_den / 4.) * (pow(B_upstream, 2.) / (4. * PI * proton_mass * c * c * 
+        magnetization)) * c * plasmoid_Lorentz_factor[i] * pow(10, plasmoid_volume_derivative[i]) * 
+          half_length * half_length;
+  }
+  t_esc = pow(10., plasmoid_size[i]) * half_length / (2. * c);
+  vol = pow(10., plasmoid_volume[i]) * pow(half_length, 3.);
+
+  plasmoid_Lorentz_factor_SMBH = Gamma_jet * plasmoid_Lorentz_factor[i] * (1. + 
+    Beta_jet * sqrt(1. - pow(plasmoid_Lorentz_factor[i], -2.)) * cos(theta_prime));
+
+  for (l = 0; l < lmax; l++)
+  {
+    N_external[l] = 0.5 * 0.265 * frac_BLR *vol * x[l] * pow(plasmoid_Lorentz_factor_SMBH * electron_mass *
+      c * c, 2.) * pow(boltzman_const * BLR_temp * plasmoid_Lorentz_factor_SMBH, -3.) / (
+      exp(x[l] * electron_mass * c * c / (boltzman_const * BLR_temp * plasmoid_Lorentz_factor_SMBH)) - 1.);
+
+    if (N_external[l] < 1.E-200) 
     {
-        Qe_inj[k] = (ge[k] >= ge_min)*(1. - electron_injec_slope) * pow(ge[k], -electron_injec_slope) / 
-        (pow(ge_max, 1. - electron_injec_slope) - pow(ge_min, 1. - electron_injec_slope)) * (10. * 
-            plasmoid_avg_num_den / 4.) * (pow(B_upstream, 2.) / (4. * PI * proton_mass * c * c * 
-                magnetization)) * c * plasmoid_Lorentz_factor[i] * pow(10, plasmoid_volume_derivative[i]) * 
-            half_length * half_length;
+      N_external[l] = 1.E-200;
     }
-    t_esc = pow(10., plasmoid_size[i]) * half_length / (2. * c);
-    vol = pow(10., plasmoid_volume[i]) * pow(half_length, 3.);
-    /******************************************************/
-    /******************************************************/
+  }
+  /******************************************************/
+  /******************************************************/
 
 
 
 	/************* Synchrotron Source Terms (Electron & Proton) *************/
 	/************************************************************************/
-    for (l = 0; l < lmax; l++)
+  for (l = 0; l < lmax; l++)
 	{
 		Q_syn_e[l] = 0;
-	    for (k = 0; k < kmax; k++) 
-        {
-            Q_syn_e[l] += pe_single[l][k] * ge[k] * N_e[k] * delta_ge_int / (plank_const * x[l]);
-        }
+	  for (k = 0; k < kmax; k++) 
+    {
+      Q_syn_e[l] += pe_single[l][k] * ge[k] * N_e[k] * delta_ge_int / (plank_const * x[l]);
+    }
 	}
 	/************************************************************************/
 	/************************************************************************/
@@ -657,15 +681,13 @@ for (i = 0; i < (number_of_elements - 1) * sw_rtc; i++)
 	{
 		L_ICT_e_plus[k] = 0; L_ICT_e_minus[k] = 0;
 		for (l = 0; l < ict_bound_loss_plus[k]; l++) 
-        {
-            //L_ICT_e_plus[k] += delta_x*x[l]*x[l]*(N_x[l] + N_BLR[l]*sw_ext)*4.*sigmaT*c/(3.*vol);
-            L_ICT_e_plus[k] += delta_x * x[l] * x[l] * (N_x[l]) * 4. * sigmaT * c / (3. * vol);
-        } 
+    {
+      L_ICT_e_plus[k] += delta_x * x[l] * x[l] * (N_x[l] + N_external[l] * sw_ext) * 4. * sigmaT * c / (3. * vol);
+    } 
 		for (l = 0; l < ict_bound_loss_minus[k]; l++) 
-        {
-            //L_ICT_e_minus[k] += delta_x*x[l]*x[l]*(N_x[l] + N_BLR[l]*sw_ext)*4.*sigmaT*c/(3.*vol);
-            L_ICT_e_minus[k] += delta_x * x[l] * x[l] * (N_x[l]) * 4. * sigmaT * c / (3. * vol);
-        } 
+    {
+      L_ICT_e_minus[k] += delta_x * x[l] * x[l] * (N_x[l] + N_external[l] * sw_ext) * 4. * sigmaT * c / (3. * vol);
+    } 
 	}
 	/*********************************************************************************/
 	/*********************************************************************************/
@@ -679,10 +701,9 @@ for (i = 0; i < (number_of_elements - 1) * sw_rtc; i++)
 	{
 		L_ICKN_e[k] = 0;
 		for (l = ickn_bound_loss[k]; l < lmax; l++) 
-        {
-            //L_ICKN_e[k] += (sigmaT*c/vol)*(N_e[k]/ge[k])*delta_x*(N_x[l] + N_BLR[l]*sw_ext);
-            L_ICKN_e[k] += (sigmaT * c / vol) * (N_e[k] / ge[k]) * delta_x * (N_x[l]);
-        }
+    {
+      L_ICKN_e[k] += (sigmaT * c / vol) * (N_e[k] / ge[k]) * delta_x * (N_x[l] + N_external[l] * sw_ext);
+    }
 	}
 	/**********************************************************************************/
 	/**********************************************************************************/
@@ -753,11 +774,11 @@ for (i = 0; i < (number_of_elements - 1) * sw_rtc; i++)
 		if (gg_ee_bound_loss[l] != lmax)
 		{
 			for (ll = gg_ee_bound_loss[l]; ll < lmax; ll++) 
-            {
-                //L_gg_ee[l] += (1./vol)*N_x[l]*delta_x*x[ll]*(N_x[ll] + N_BLR[ll]*sw_ext)*photon_annihilation_rate(x[l]*x[ll]);
-                L_gg_ee[l] += (1. / vol) * N_x[l] * delta_x * x[ll] * (N_x[ll]) * 
-                photon_annihilation_rate(x[l] * x[ll]);
-            }
+      {
+        L_gg_ee[l] += (1. / vol) * (N_x[l] + N_external[l] * sw_ext) * delta_x
+        * x[ll] * (N_x[ll] + N_external[ll] * sw_ext) * photon_annihilation_rate(x[l]
+          * x[ll]);
+      }
 		}
 	}
 	/***************************************************************/
@@ -777,10 +798,12 @@ for (i = 0; i < (number_of_elements - 1) * sw_rtc; i++)
 		for (l = gg_ee_bound_source[k]; l < lmax; l++)
 		{
 			//Q_gg_ee[k] += (4./vol)*N_x[gg_ee_gamma_bound_source[k]]*delta_x*x[l]*photon_annihilation_rate(2.*x[l]*ge[k])*N_x[l];
-			Q_gg_ee[k] += (4./vol) * delta_x * x[l] * photon_annihilation_rate(2. * x[l] * ge[k])* N_x[l] * 
-            (N_x[gg_ee_gamma_bound_source[k] - 1] + (2. * ge[k] - x[gg_ee_gamma_bound_source[k] - 1]) * 
-                (N_x[gg_ee_gamma_bound_source[k]] - N_x[gg_ee_gamma_bound_source[k] - 1]) / 
-                (x[gg_ee_gamma_bound_source[k]] - x[gg_ee_gamma_bound_source[k] - 1]));
+			// Q_gg_ee[k] += (4./vol) * delta_x * x[l] * photon_annihilation_rate(2. * x[l] * ge[k])* N_x[l] * 
+   //    (N_x[gg_ee_gamma_bound_source[k] - 1] + (2. * ge[k] - x[gg_ee_gamma_bound_source[k] - 1]) * 
+   //      (N_x[gg_ee_gamma_bound_source[k]] - N_x[gg_ee_gamma_bound_source[k] - 1]) / 
+   //      (x[gg_ee_gamma_bound_source[k]] - x[gg_ee_gamma_bound_source[k] - 1]));
+      Q_gg_ee[k] += (4. / vol) * (N_x[gg_ee_gamma_bound_source[k]] + N_external[gg_ee_gamma_bound_source[k]] * sw_ext)
+      * delta_x * x[l] * photon_annihilation_rate(2. * ge[k] * x[l]) * (N_x[l] + N_external[l]);
 		}
 	}
 	/*****************************************************************/
@@ -848,16 +871,16 @@ for (i = 0; i < (number_of_elements - 1) * sw_rtc; i++)
 	{
 		L_ssa[l] = 0.;
 		for (k = 0; k < kmax; k++) 
-        {
-            //L_ssa[l] += -(h*h/(8.*PI*electron_mass*pow(electron_mass*c*c, 2.)))*(pow(x[l], -2.))*(c*(N_x[l] + N_BLR[l]*sw_ext)/vol)*delta_ge_int*pe_single[l][k]*((N_e[k + 1] - N_e[k])/delta_ge_int - 2.*N_e[k]);
-            L_ssa[l] += -(plank_const * plank_const / (8. * PI * electron_mass * pow(electron_mass * 
-                c * c, 2.))) * (pow(x[l], -2.)) * (c * (N_x[l]) / vol) * delta_ge_int * pe_single[l][k] * 
-            ((N_e[k + 1] - N_e[k]) / delta_ge_int - 2. * N_e[k]);
-        }
+    {
+      //L_ssa[l] += -(h*h/(8.*PI*electron_mass*pow(electron_mass*c*c, 2.)))*(pow(x[l], -2.))*(c*(N_x[l] + N_BLR[l]*sw_ext)/vol)*delta_ge_int*pe_single[l][k]*((N_e[k + 1] - N_e[k])/delta_ge_int - 2.*N_e[k]);
+      L_ssa[l] += -(plank_const * plank_const / (8. * PI * electron_mass * pow(electron_mass * 
+        c * c, 2.))) * (pow(x[l], -2.)) * (c * (N_x[l] + N_external[l] * sw_ext) / vol) 
+      * delta_ge_int * pe_single[l][k] * ((N_e[k + 1] - N_e[k]) / delta_ge_int - 2. * N_e[k]);
+    }
 		if (L_ssa[l] <= 0.) 
-        {
-            L_ssa[l] = 1.E-20;
-        }
+    {
+      L_ssa[l] = 1.E-20;
+    }
 	}
 	/*******************************************************/
 	/*******************************************************/
