@@ -17,7 +17,7 @@ i) Set up the initial conditions required to compute the emission from the evolv
 
 ii) Computes all source and loss rate terms for the evolving particle and photon distributions. 
 
-iii) Numerically solves the continuity equation for the evolving the particle and photon distributions. Solving the former requires the use of the tri-diagonal matrix algorithm ([[1][1]], [[2][2]], [[5][5]]).
+iii) Numerically solves the continuity equation for the evolving the particle and photon distributions. Solving the former requires the use of the tri-diagonal matrix algorithm [[1], [2], [5]].
 
 iv) Writes to a file the log10 of the following: `particle distribution` (i.e. `gamma^p * N(gamma, t)`, where `p` is the slope of the injected particle distribution), `particle Lorentz factors`, `photon frequencies` (in Hz), and `photon spectrum` (i.e. `nu L_nu` in erg/s).
 
