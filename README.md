@@ -1,4 +1,4 @@
-This repository contains a single-zone radiative code used for computing the emission from a time-evolving relativistic, non-thermal particle distribution. Currently, this code contains all relevent radiative processes for a leptonic (i.e. electron and positron) emission model (for a more apt description, see [3]). Here, the emitting region is assumed to be a plasmoid, i.e. a quasi-spherical blob of plasma containing magnetic fields and relativistic particles (for detailed description of plasmoids and their astrophysical application, see [4]). As such, the code is coupled to results of particle-in-cell simulations of relativistic reconnection in electron-positron (i.e. pair) plasma which govern the evolution and dynamics of plasmoids (for description of PIC and relativistic reconnection, see [6]). 
+This repository contains a single-zone radiative code used for computing the emission from a time-evolving relativistic, non-thermal particle distribution. Currently, this code contains all relevent radiative processes for a leptonic (i.e. electron and positron) emission model (for a more apt description, see [[3][3]]). Here, the emitting region is assumed to be a plasmoid, i.e. a quasi-spherical blob of plasma containing magnetic fields and relativistic particles (for detailed description of plasmoids and their astrophysical application, see [4]). As such, the code is coupled to results of particle-in-cell simulations of relativistic reconnection in electron-positron (i.e. pair) plasma which govern the evolution and dynamics of plasmoids (for description of PIC and relativistic reconnection, see [6]). 
 
 If using this code (and any of its contents), please make proper references of the following:
 
@@ -27,15 +27,22 @@ Development of a lepto-hadronic code which allows for the computation of the pot
 
 # Citations
 
-[1] Chang, J.S. & Cooper, G., 1970, Journal of Computational Physics 6, 1 (https://ui.adsabs.harvard.edu/abs/1970JCoPh...6....1C/abstract)
+(1) Chang, J.S. & Cooper, G., 1970, Journal of Computational Physics 6, 1 (https://ui.adsabs.harvard.edu/abs/1970JCoPh...6....1C/abstract)
 
-[2] Chiaberge M., Ghisellini G., 1999, MNRAS, 306, 551 (https://ui.adsabs.harvard.edu/abs/1999MNRAS.306..551C/abstract)
+(2) Chiaberge M., Ghisellini G., 1999, MNRAS, 306, 551 (https://ui.adsabs.harvard.edu/abs/1999MNRAS.306..551C/abstract)
 
-[3] Christie I. M., Petropoulou M., Sironi L., Giannios D., 2019, MNRAS, 482, 65 (https://ui.adsabs.harvard.edu/abs/2019MNRAS.482...65C/abstract)
+(3) Christie I. M., Petropoulou M., Sironi L., Giannios D., 2019, MNRAS, 482, 65 (https://ui.adsabs.harvard.edu/abs/2019MNRAS.482...65C/abstract)
 
-[4] Petropoulou M., Giannios D., Sironi L., 2016, MNRAS, 462, 3325 (https://ui.adsabs.harvard.edu/abs/2016MNRAS.462.3325P/abstract)
+(4) Petropoulou M., Giannios D., Sironi L., 2016, MNRAS, 462, 3325 (https://ui.adsabs.harvard.edu/abs/2016MNRAS.462.3325P/abstract)
 
-[5] Press, W.H. et al., 1989, Numerical Recipes in Fortran, Cambridge University Press (https://ui.adsabs.harvard.edu/abs/1989nrpa.book.....P/abstract)
+(5) Press, W.H. et al., 1989, Numerical Recipes in Fortran, Cambridge University Press (https://ui.adsabs.harvard.edu/abs/1989nrpa.book.....P/abstract)
 
-[6] Sironi L., Giannios D., Petropoulou M., 2016, MNRAS, 462, 48 (https://ui.adsabs.harvard.edu/abs/2016MNRAS.462...48S/abstract)
+(6) Sironi L., Giannios D., Petropoulou M., 2016, MNRAS, 462, 48 (https://ui.adsabs.harvard.edu/abs/2016MNRAS.462...48S/abstract)
+
+[1]: https://ui.adsabs.harvard.edu/abs/1970JCoPh...6....1C/abstract
+[2]: https://ui.adsabs.harvard.edu/abs/1999MNRAS.306..551C/abstract
+[3]: https://ui.adsabs.harvard.edu/abs/2019MNRAS.482...65C/abstract
+[4]: https://ui.adsabs.harvard.edu/abs/2016MNRAS.462.3325P/abstract
+[5]: https://ui.adsabs.harvard.edu/abs/1989nrpa.book.....P/abstract
+[6]: https://ui.adsabs.harvard.edu/abs/2016MNRAS.462...48S/abstract
 
