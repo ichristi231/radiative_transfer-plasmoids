@@ -56,9 +56,9 @@ vi) Sironi et al. '16
 /* Thomson cross section in cm^2. */
 #define sigmaT 6.6524E-25
 /* Number of grid points in the electron energy range (in log space). */
-#define kmax 300
+#define kmax 350
 /* Number of grid points in the photon frequency range (in log space). */
-#define lmax 300
+#define lmax 350
 
 /* Declaration of photon-photon pair production reaction 
    rate (see eqn. in 4.7 in Coppi & Blandford '90). */
@@ -90,7 +90,7 @@ double photon_annihilation_rate(double o)
 /**********************************************************************/
 double interpolation(double xx,double x1, double x2, double y1, double y2)
 {
-    return y1 + (xx - x1) * (y2 - y1) / (x2 - x1); 
+  return y1 + (xx - x1) * (y2 - y1) / (x2 - x1); 
 }
 /**********************************************************************/
 /**********************************************************************/
@@ -99,6 +99,59 @@ double interpolation(double xx,double x1, double x2, double y1, double y2)
 
 
 int main() {
+/************************ Insert initial parameters below ************************/
+/*********************************************************************************/
+double B_upstream, B, UB, electron_injec_slope, BLR_temp, Gamma_jet, ge_max;
+double plasmoid_avg_num_den, magnetization, half_length, pair_multiplicity;
+double theta_prime, Beta_jet, frac_BLR;
+
+/* Magnetization of un-reconnected (upstream) plasma. Defined as the ratio of the
+   magnetic energy density to particle eneregy density far upstream from the 
+   reconnection layer. */
+magnetization = 10.0;
+
+/* Half-length of the reconnection layer in cm. */
+half_length = 5.e16;
+
+/* Magnetic field strength (in G) and magnetic energy desntiy within the radiating 
+   blob. The magnetic field far upstream from the reconnecting plasma is set first.
+   The magnetic field in the plasmoid is then sqrt(2) times larger (see Fig. 5 in 
+   Sironi et al. 2016). */
+B_upstream = 5;
+B = sqrt(2.) * B_upstream; 
+UB = B * B / (8. * PI);
+
+/* Average particle number density per plasmoid. */
+plasmoid_avg_num_den = 9.95375;
+
+/* Number of pairs to ions within the jet. */
+pair_multiplicity = 6.;
+
+/* Bulk Lorentz factor and dimensionless velocity (i.e. normalized
+   to the speed of light) of the jet. */
+Gamma_jet = 12.;
+Beta_jet = sqrt(1. - pow(Gamma_jet, -2.));
+
+/* Power-law index of injected electron distribution. */
+electron_injec_slope = 2.1;
+
+/* Characteristic temperature in Kelvin of blackbody external 
+   radiation field (if applicable). */
+BLR_temp = 5.E3;
+
+/* Maximum Lorentz factor of injected electron distribution. */
+ge_max = 5.E3;
+
+/* The angle (in radians) between the blazar jet's access and the plasmoid's 
+   direction of motion (i.e. with respect to the jet's co-moving frame). */
+theta_prime = 30. * PI / 180.;
+
+/* Fraction of the disk's luminosity which is reprocessed by the BLR. 
+   Typicall value is 0.1 (i.e. 10%). */
+frac_BLR = 0.1;
+/*********************************************************************************/
+/*********************************************************************************/
+
 
 /*********** Radiative Processes Switches **********/
 /***************************************************/
@@ -117,50 +170,19 @@ sw_ggee = 1;
 sw_ickn = 1; 
 /* Inverse Compton (Thomson regime) emission */
 sw_ict = 1; 
-/* Synchrotron self-absroption */
+/* Synchrotron self-absorption */
 sw_ssa = 1; 
-/* The addition of radiation fields external to the jet */
-sw_ext = 0; 
+/* The addition of radiation fields external to the jet. 
+   Here, the radiation field is taken to be the BLR of 
+   the jet, assumed to be a blackbody source with 
+   temperature set above. */
+sw_ext = 1; 
 /* The radiative transfer caculation. Used for checking
    the initalization of all quantities prior to the start
    of the radiative section. */
 sw_rtc = 1;
 /***************************************************/
 /***************************************************/
-
-
-/************************ Insert initial parameters below ************************/
-/*********************************************************************************/
-double B_upstream, B, UB, electron_injec_slope, BLR_temp, Gamma_jet, ge_max;
-double plasmoid_avg_num_den, magnetization, half_length, pair_multiplicity;
-
-/* Magnetization of un-reconnected (upstream) plasma. Defined as the ratio of the
-   magnetic energy density to particle eneregy density far upstream from the 
-   reconnection layer. */
-magnetization = 10.0;
-/* Half-length of the reconnection layer in cm. */
-half_length = 5.e16;
-/* Magnetic field strength (in G) and magnetic energy desntiy within the radiating 
-   blob. The magnetic field far upstream from the reconnecting plasma is set first.
-   The magnetic field in the plasmoid is then sqrt(2) times larger (see Fig. 5 in 
-   Sironi et al. 2016). */
-B_upstream = 1.5;
-B = sqrt(2.) * B_upstream; 
-UB = B * B / (8. * PI);
-/* Average particle number density per plasmoid. */
-plasmoid_avg_num_den = 9.95375;
-/* Number of pairs to ions within the jet. */
-pair_multiplicity = 1.;
-/* Bulk Lorentz factor of the jet. */
-Gamma_jet = 10.;
-/* Power-law index of injected electron distribution. */
-electron_injec_slope = 2.1;
-/* Characteristic temperature in Kelvin of blackbody external radiation field (if applicable). */
-BLR_temp = 1.E4;
-/* Maximum Lorentz factor of injected electron distribution. */
-ge_max = 5.E4;
-/*********************************************************************************/
-/*********************************************************************************/
 
 
 /********** Importing Plasmoid Properties from PIC Simulations **********/
@@ -269,31 +291,6 @@ This will be used when integrating over the photon energy
 delta_x = log(x[1]) - log(x[0]);
 /**********************************************************************************/
 /**********************************************************************************/
-
-
-/************* External Radiation Fields *************/
-/*****************************************************/
-/* Below, we setup a blackbody radiation field external to the emitting region.
-From the prescribed characteristic temperature of the blackbody source, we 
-determine the spectral energy density and distribution of the photon field as
-measured in the co-moving frame of the emitting region. */
-// double N_BLR[lmax], L_BLR, R_BLR, U_BLR[lmax], Gamma_blob_2, Doppler_blob;
-
-// /* As our first test, we assume the blackbody emitter is the BLR of the AGN.
-// We adopt a particular BLR luminosity (in erg/s) and use the relation provided in 
-// to determine the radius (in cm) of the BLR.*/
-// L_BLR = 1.0E45; R_BLR = 1.0E17 * sqrt(L_BLR/1.0E45);
-// Gamma_blob_2 = Gamma_blob*Gamma_jet*(1 + sqrt(1 - pow(Gamma_jet, -2.))*sqrt(1 - pow(Gamma_blob, -2.)));
-// // T = T*Gamma_blob_2;
-// Doppler_blob = 1./(Gamma_blob_2*(1. - sqrt(1 - pow(Gamma_blob_2, -2.))));
-
-// for (l = 0; l < lmax; l++)
-// {
-// 	U_BLR[l] = 0.5*pow(Gamma_blob_2, 2.)*(L_BLR/(4.*PI*R_BLR*R_BLR*c))*pow(h*nu[l]/(boltzman_const*T), 3.)/(exp(h*nu[l]/(boltzman_const*T)) - 1.);
-// 	N_BLR[l] = U_BLR[l]*vol/(electron_mass*c*c*x[l]*x[l]); if (N_BLR[l] < 1.E-200) {N_BLR[l] = 1.E-200;}
-// }
-/*****************************************************/
-/*****************************************************/
 
 
 /*********** Electron Injection & Energy Distribution Parameters ***********/
