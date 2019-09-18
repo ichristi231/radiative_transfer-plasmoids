@@ -49,12 +49,8 @@ vi) Sironi et al. '16
 #include <math.h>
 #include <stdlib.h>
 #include <time.h>
+#include "physical_constants.h"
 
-#define PI 3.14159265358979323846 
-/* Speed of light in cm/s. */
-#define c 3.0E10
-/* Thomson cross section in cm^2. */
-#define sigmaT 6.6524E-25
 /* Number of grid points in the electron energy range (in log space). */
 #define kmax 350
 /* Number of grid points in the photon frequency range (in log space). */
@@ -228,24 +224,6 @@ fclose(plasmoid_volume_derivative_file);
 fclose(plamoid_size_file);
 /************************************************************************/
 /************************************************************************/
-
-
-/**************** Physical Constants ***************/
-/***************************************************/
-double electron_mass, proton_mass, electric_charge, plank_const, boltzman_const;
-
-/* Electron & proton mass in g. */
-electron_mass = 9.10938E-28; 
-proton_mass = 1.6726219E-24; 
-/* Electron charge in CGS. */
-electric_charge = 4.8032068E-10; 
-/* Plank's constant in erg s. */
-plank_const = 6.6260755E-27;
-/* Boltzman constant in erg K^(-1). */
-boltzman_const = 1.380658E-16;
-/***************************************************/
-/***************************************************/
-
 
 
 /************************ Import x & F(x) tables below ************************/
