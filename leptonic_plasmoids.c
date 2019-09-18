@@ -49,13 +49,9 @@ vi) Sironi et al. '16
 #include <math.h>
 #include <stdlib.h>
 #include <time.h>
+
 #include "physical_constants.h"
-
-/* Number of grid points in the electron energy range (in log space). */
-#define kmax 350
-/* Number of grid points in the photon frequency range (in log space). */
-#define lmax 350
-
+#include "initial_conditions.h"
 
 
 /* Declaration of photon-photon pair production reaction 
@@ -66,65 +62,16 @@ double interpolation(double xx,double x1, double x2, double y1, double y2);
 /* Radiative Transfer function for a single plasmoid. */
 void single_plasmoid_calculation(double magnetization, double half_length, double B_upstream, 
   double plasmoid_avg_num_den, double pair_multiplicity, double Gamma_jet,
-  double electron_injec_slope, double BLR_temp, double ge_max, double theta_prime,
-  double frac_BLR, int plasmoid_number, int plasmoid_iteration);
-
+  double electron_injec_slope, double BLR_temp, double ge_max, double theta_p,
+  double f_BLR, int plasmoid_number, int plasmoid_iteration);
 
 
 
 int main()
 {
-  /************************ Insert initial parameters below ************************/
-  /*********************************************************************************/
-  double B_upstream, electron_injec_slope, BLR_temp, Gamma_jet, ge_max;
-  double magnetization, half_length, pair_multiplicity;
-  double theta_prime, frac_BLR;
-
-  /* Magnetization of un-reconnected (upstream) plasma. Defined as the ratio of the
-     magnetic energy density to particle eneregy density far upstream from the 
-     reconnection layer. */
-  magnetization = 10.0;
-
-  /* Half-length of the reconnection layer in cm. */
-  half_length = 5.e16 / 3.3;
-
-  /* Magnetic field strength (in G) and magnetic energy desntiy within the radiating 
-     blob. The magnetic field far upstream from the reconnecting plasma is set first.
-     The magnetic field in the plasmoid is then sqrt(2) times larger (see Fig. 5 in 
-     Sironi et al. 2016). */
-  B_upstream = 1.5;
-
-  /* Number of pairs to ions within the jet. */
-  pair_multiplicity = 1.;
-
-  /* Bulk Lorentz factor and dimensionless velocity (i.e. normalized
-     to the speed of light) of the jet. */
-  Gamma_jet = 12.;
-
-  /* Power-law index of injected electron distribution. */
-  electron_injec_slope = 2.1;
-
-  /* Characteristic temperature in Kelvin of blackbody external 
-     radiation field (if applicable). */
-  BLR_temp = 5.E3;
-
-  /* Maximum Lorentz factor of injected electron distribution. */
-  ge_max = 5.E4;
-
-  /* The angle (in radians) between the blazar jet's access and the plasmoid's 
-     direction of motion (i.e. with respect to the jet's co-moving frame). */
-  theta_prime = 0. * PI / 180.;
-
-  /* Fraction of the disk's luminosity which is reprocessed by the BLR. 
-     Typicall value is 0.1 (i.e. 10%). */
-  frac_BLR = 0.1;
-  /*********************************************************************************/
-  /*********************************************************************************/
-
-
 
   /* Set the number of plasmoids to perform the radiative transfer calculation. */
-  int number_of_plasmoids = 30;
+  int number_of_plasmoids = 1;
 
   /* Initialize arrays to store: i) the number of time-steps for each plasmoid
      in which the radiative section is called and ii) the area-averaged particle
@@ -153,8 +100,8 @@ int main()
      the free parameters chosen above. */
   for (int i = 0; i < number_of_plasmoids; i++)
   {
-    single_plasmoid_calculation(magnetization, half_length, B_upstream, plasmoid_avg_num_den[i],
-    pair_multiplicity, Gamma_jet, electron_injec_slope, BLR_temp, ge_max, theta_prime,
+    single_plasmoid_calculation(magnetization_sigma, half_length_L, B_up, plasmoid_avg_num_den[i],
+    pair_multiplicity_N_pm, Gamma_j, electron_injec_slope_p_e, BLR_T, gamma_e_max, theta_prime,
     frac_BLR, i + 1, plasmoid_iteration_number[i]);
   }
   
@@ -169,8 +116,8 @@ int main()
 /***************************************************************/
 void single_plasmoid_calculation(double magnetization, double half_length, double B_upstream, 
   double plasmoid_avg_num_den, double pair_multiplicity, double Gamma_jet,
-  double electron_injec_slope, double BLR_temp, double ge_max, double theta_prime,
-  double frac_BLR, int plasmoid_number, int plasmoid_iteration) 
+  double electron_injec_slope, double BLR_temp, double ge_max, double theta_p,
+  double f_BLR, int plasmoid_number, int plasmoid_iteration) 
 {
   printf("Beginning Plasmoid number %d. \n", plasmoid_number);
 
@@ -565,12 +512,12 @@ void single_plasmoid_calculation(double magnetization, double half_length, doubl
      create txt files used in saving the temporal evolution of all particle
      species distributions. */
 
-  char nuLnu_file_name[100], Ne_file_name[100], particle_conservation_file_name[100];
+  char nuLnu_file_name[150], Ne_file_name[150], particle_conservation_file_name[150];
 
   snprintf(nuLnu_file_name, sizeof(nuLnu_file_name), 
-    "leptonic_version_results/co_moving_nu_l_nu_plasmoid_%d", plasmoid_number);
+    "leptonic_version_results/co_moving_nu_l_nu_plasmoid_%d.txt", plasmoid_number);
   snprintf(Ne_file_name, sizeof(Ne_file_name), 
-    "leptonic_version_results/electron_distribution_plasmoid_%d", plasmoid_number);
+    "leptonic_version_results/electron_distribution_plasmoid_%d.txt", plasmoid_number);
   snprintf(particle_conservation_file_name, sizeof(particle_conservation_file_name), 
     "leptonic_version_results/particle_conservation_check_plasmoid_%d.txt", plasmoid_number);
 
@@ -656,11 +603,11 @@ void single_plasmoid_calculation(double magnetization, double half_length, doubl
     vol = pow(10., plasmoid_volume[i]) * pow(half_length, 3.);
 
     plasmoid_Lorentz_factor_SMBH = Gamma_jet * plasmoid_Lorentz_factor[i] * (1. + 
-      Beta_jet * sqrt(1. - pow(plasmoid_Lorentz_factor[i], -2.)) * cos(theta_prime));
+      Beta_jet * sqrt(1. - pow(plasmoid_Lorentz_factor[i], -2.)) * cos(theta_p * PI / 180.));
 
     for (l = 0; l < lmax; l++)
     {
-      N_external[l] = 0.5 * 0.265 * frac_BLR *vol * x[l] * pow(plasmoid_Lorentz_factor_SMBH * electron_mass *
+      N_external[l] = 0.5 * 0.265 * f_BLR *vol * x[l] * pow(plasmoid_Lorentz_factor_SMBH * electron_mass *
         c * c, 2.) * pow(boltzman_const * BLR_temp * plasmoid_Lorentz_factor_SMBH, -3.) / (
         exp(x[l] * electron_mass * c * c / (boltzman_const * BLR_temp * plasmoid_Lorentz_factor_SMBH)) - 1.);
 
