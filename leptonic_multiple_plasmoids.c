@@ -49,12 +49,8 @@ vi) Sironi et al. '16
 #include <math.h>
 #include <stdlib.h>
 #include <time.h>
+#include "physical_constants.h"
 
-#define PI 3.14159265358979323846 
-/* Speed of light in cm/s. */
-#define c 3.0E10
-/* Thomson cross section in cm^2. */
-#define sigmaT 6.6524E-25
 /* Number of grid points in the electron energy range (in log space). */
 #define kmax 350
 /* Number of grid points in the photon frequency range (in log space). */
@@ -90,16 +86,16 @@ int main()
   magnetization = 10.0;
 
   /* Half-length of the reconnection layer in cm. */
-  half_length = 5.e16;
+  half_length = 5.e16 / 3.3;
 
   /* Magnetic field strength (in G) and magnetic energy desntiy within the radiating 
      blob. The magnetic field far upstream from the reconnecting plasma is set first.
      The magnetic field in the plasmoid is then sqrt(2) times larger (see Fig. 5 in 
      Sironi et al. 2016). */
-  B_upstream = 5;
+  B_upstream = 1.5;
 
   /* Number of pairs to ions within the jet. */
-  pair_multiplicity = 6.;
+  pair_multiplicity = 1.;
 
   /* Bulk Lorentz factor and dimensionless velocity (i.e. normalized
      to the speed of light) of the jet. */
@@ -113,7 +109,7 @@ int main()
   BLR_temp = 5.E3;
 
   /* Maximum Lorentz factor of injected electron distribution. */
-  ge_max = 5.E3;
+  ge_max = 5.E4;
 
   /* The angle (in radians) between the blazar jet's access and the plasmoid's 
      direction of motion (i.e. with respect to the jet's co-moving frame). */
@@ -128,7 +124,7 @@ int main()
 
 
   /* Set the number of plasmoids to perform the radiative transfer calculation. */
-  int number_of_plasmoids = 5;
+  int number_of_plasmoids = 30;
 
   /* Initialize arrays to store: i) the number of time-steps for each plasmoid
      in which the radiative section is called and ii) the area-averaged particle
@@ -137,10 +133,12 @@ int main()
   int plasmoid_iteration_number[number_of_plasmoids];
   double plasmoid_avg_num_den[number_of_plasmoids];
 
+
   /* Open and read in files of the number of time-steps and the area-averaged 
      particle number density per plasmoid. */
   FILE *pls_avg_num_den = fopen("plasmoid_properties/plasmoid_avg_particle_num_density.txt", "r");
   FILE *pls_iteration = fopen("plasmoid_properties/number_of_iterations_per_plasmoid.txt", "r");
+
   for (int i = 0; i < number_of_plasmoids; ++i)
   {
     fscanf(pls_iteration, "%d", &plasmoid_iteration_number[i]);
@@ -153,14 +151,13 @@ int main()
   /* For each plasmoid, we call the radiative transfer function to calculate
      the co-moving photon and particle distributions for each plasmoid using
      the free parameters chosen above. */
-  for (int i = 0; i < 2 + 0*number_of_plasmoids; i++)
+  for (int i = 0; i < number_of_plasmoids; i++)
   {
     single_plasmoid_calculation(magnetization, half_length, B_upstream, plasmoid_avg_num_den[i],
     pair_multiplicity, Gamma_jet, electron_injec_slope, BLR_temp, ge_max, theta_prime,
     frac_BLR, i + 1, plasmoid_iteration_number[i]);
   }
   
-
   return 0;
 }
 
@@ -213,7 +210,7 @@ void single_plasmoid_calculation(double magnetization, double half_length, doubl
      Here, the radiation field is taken to be the BLR of 
      the jet, assumed to be a blackbody source with 
      temperature set above. */
-  sw_ext = 1; 
+  sw_ext = 0; 
   /* The radiative transfer caculation. Used for checking
      the initalization of all quantities prior to the start
      of the radiative section. */
@@ -237,9 +234,11 @@ void single_plasmoid_calculation(double magnetization, double half_length, doubl
      volume (normalized the the half-length of the reconnection layer
      cubed)
 
-     Note that all quantities read in are the log-10 values. 
+     Note that all quantities read in are except the plasmoid's Lorentz
+     factor are the log-10 values. 
   */
   int i = 0;
+
 
   char Lorentz_file_name[60], Volume_file_name[60];
   char Volume_derivative_file_name[60], size_file_name[60];
@@ -263,6 +262,8 @@ void single_plasmoid_calculation(double magnetization, double half_length, doubl
   double plasmoid_volume_derivative[plasmoid_iteration];
   double plasmoid_size[plasmoid_iteration];
 
+
+
   for (i = 0; i < plasmoid_iteration; i++)
   {
     fscanf(plasmoid_Lorentz_file, "%lf", &plasmoid_Lorentz_factor[i]);
@@ -277,24 +278,6 @@ void single_plasmoid_calculation(double magnetization, double half_length, doubl
   fclose(plamoid_size_file);
   /************************************************************************/
   /************************************************************************/
-
-
-  /**************** Physical Constants ***************/
-  /***************************************************/
-  double electron_mass, proton_mass, electric_charge, plank_const, boltzman_const;
-
-  /* Electron & proton mass in g. */
-  electron_mass = 9.10938E-28; 
-  proton_mass = 1.6726219E-24; 
-  /* Electron charge in CGS. */
-  electric_charge = 4.8032068E-10; 
-  /* Plank's constant in erg s. */
-  plank_const = 6.6260755E-27;
-  /* Boltzman constant in erg K^(-1). */
-  boltzman_const = 1.380658E-16;
-  /***************************************************/
-  /***************************************************/
-
 
 
   /************************ Import x & F(x) tables below ************************/
@@ -358,11 +341,13 @@ void single_plasmoid_calculation(double magnetization, double half_length, doubl
   /* Lorentz factor of the electron distribution, 
   evaluated at the half grid pints, and the spacing between 
   each of them as governed by Chiaberge & Ghisellini '99. */
+  double max_ge_array = 1.E7;
+
   for (k = 1; k < kmax + 1; k++)
   {
-  	ge[k - 1] = 1.01 * pow(ge_max / 1.01, (k - 1.) / (kmax - 1.));
-    ge_minus[k - 1] = 1.01 * pow(ge_max / 1.01, (k - 0.5 - 1.) / (kmax - 1.));
-    ge_plus[k - 1] = 1.01 * pow(ge_max / 1.01, (k + 0.5 - 1.) / (kmax - 1.));
+  	ge[k - 1] = 1.01 * pow(max_ge_array / 1.01, (k - 1.) / (kmax - 1.));
+    ge_minus[k - 1] = 1.01 * pow(max_ge_array / 1.01, (k - 0.5 - 1.) / (kmax - 1.));
+    ge_plus[k - 1] = 1.01 * pow(max_ge_array / 1.01, (k + 0.5 - 1.) / (kmax - 1.));
     delta_ge[k - 1] = ge_plus[k - 1] - ge_minus[k - 1];
     fprintf(gamma_e_save, "%lf\n", log10(ge[k - 1]));
   }
@@ -544,8 +529,6 @@ void single_plasmoid_calculation(double magnetization, double half_length, doubl
     {
       gg_ee_gamma_bound_source[k] += 2. * ge[k] >= x[l];
     }
-    //printf("%d\n", gg_ee_gamma_bound_source[k]);
-
   }
 
   /* Below, we determine the index in the dimensionless photon frequency array in which 1/x = x, where
@@ -570,7 +553,6 @@ void single_plasmoid_calculation(double magnetization, double half_length, doubl
     {
       gg_ee_bound_source[k] += (1. / (2. * ge[k])) >= x[l];
     }
-    //printf("%d\n", gg_ee_bound_source[k]);
   }
   /*********************************************************************************************/
   /*********************************************************************************************/
@@ -586,16 +568,14 @@ void single_plasmoid_calculation(double magnetization, double half_length, doubl
   char nuLnu_file_name[100], Ne_file_name[100], particle_conservation_file_name[100];
 
   snprintf(nuLnu_file_name, sizeof(nuLnu_file_name), 
-    "leptonic_version_results/co_moving_nu_l_nu_plasmoid_%d.txt", plasmoid_number);
+    "leptonic_version_results/co_moving_nu_l_nu_plasmoid_%d", plasmoid_number);
   snprintf(Ne_file_name, sizeof(Ne_file_name), 
-    "leptonic_version_results/electron_distribution_plasmoid_%d.txt", plasmoid_number);
+    "leptonic_version_results/electron_distribution_plasmoid_%d", plasmoid_number);
   snprintf(particle_conservation_file_name, sizeof(particle_conservation_file_name), 
     "leptonic_version_results/particle_conservation_check_plasmoid_%d.txt", plasmoid_number);
 
   /* Opens files in which to save the log-10 values of the co-moving
      particle and photon distributions. */
-  // FILE *nu_L_nu_save = fopen("leptonic_version_results/co_moving_nu_l_nu.txt", "w");
-  // FILE *N_e_save = fopen("leptonic_version_results/electron_distribution.txt", "w");
   FILE *nu_L_nu_save = fopen(nuLnu_file_name, "w");
   FILE *N_e_save = fopen(Ne_file_name, "w");
 
@@ -603,7 +583,6 @@ void single_plasmoid_calculation(double magnetization, double half_length, doubl
      of injected particles and ii) the total number of particles 
      determined from the updated electron distribution. This allows
      to check particle number conservation. */
-  //FILE *particle_conservation = fopen("leptonic_version_results/particle_conservation_check.txt", "w");
   FILE *particle_conservation = fopen(particle_conservation_file_name, "w");
 
   /* Declares the particle and photon distributions. */
@@ -641,6 +620,7 @@ void single_plasmoid_calculation(double magnetization, double half_length, doubl
   double N_external[lmax];
 
 
+
   /******* Initialization of all species distributions at initial timestep. *******/
   /********************************************************************************/
   for (k = 0; k < kmax; k++)
@@ -666,7 +646,7 @@ void single_plasmoid_calculation(double magnetization, double half_length, doubl
     */
     for (k = 0; k < kmax; k++) 
     {
-      Qe_inj[k] = (ge[k] >= ge_min)*(1. - electron_injec_slope) * pow(ge[k], -electron_injec_slope) / 
+      Qe_inj[k] = (ge[k] >= ge_min) * (ge[k] <= ge_max) * (1. - electron_injec_slope) * pow(ge[k], -electron_injec_slope) / 
       (pow(ge_max, 1. - electron_injec_slope) - pow(ge_min, 1. - electron_injec_slope)) * (10. * 
         plasmoid_avg_num_den / 4.) * (pow(B_upstream, 2.) / (4. * PI * proton_mass * c * c * 
           magnetization)) * c * plasmoid_Lorentz_factor[i] * pow(10, plasmoid_volume_derivative[i]) * 
@@ -858,13 +838,8 @@ void single_plasmoid_calculation(double magnetization, double half_length, doubl
   		Q_gg_ee[k] = 0;
   		for (l = gg_ee_bound_source[k]; l < lmax; l++)
   		{
-  			//Q_gg_ee[k] += (4./vol)*N_x[gg_ee_gamma_bound_source[k]]*delta_x*x[l]*photon_annihilation_rate(2.*x[l]*ge[k])*N_x[l];
-  			// Q_gg_ee[k] += (4./vol) * delta_x * x[l] * photon_annihilation_rate(2. * x[l] * ge[k])* N_x[l] * 
-     //    (N_x[gg_ee_gamma_bound_source[k] - 1] + (2. * ge[k] - x[gg_ee_gamma_bound_source[k] - 1]) * 
-     //      (N_x[gg_ee_gamma_bound_source[k]] - N_x[gg_ee_gamma_bound_source[k] - 1]) / 
-     //      (x[gg_ee_gamma_bound_source[k]] - x[gg_ee_gamma_bound_source[k] - 1]));
         Q_gg_ee[k] += (4. / vol) * (N_x[gg_ee_gamma_bound_source[k]] + N_external[gg_ee_gamma_bound_source[k]] * sw_ext)
-        * delta_x * x[l] * photon_annihilation_rate(2. * ge[k] * x[l]) * (N_x[l] + N_external[l]);
+        * delta_x * x[l] * photon_annihilation_rate(2. * ge[k] * x[l]) * (N_x[l] + N_external[l] * sw_ext);
   		}
   	}
   	/*****************************************************************/
@@ -933,7 +908,6 @@ void single_plasmoid_calculation(double magnetization, double half_length, doubl
   		L_ssa[l] = 0.;
   		for (k = 0; k < kmax; k++) 
       {
-        //L_ssa[l] += -(h*h/(8.*PI*electron_mass*pow(electron_mass*c*c, 2.)))*(pow(x[l], -2.))*(c*(N_x[l] + N_BLR[l]*sw_ext)/vol)*delta_ge_int*pe_single[l][k]*((N_e[k + 1] - N_e[k])/delta_ge_int - 2.*N_e[k]);
         L_ssa[l] += -(plank_const * plank_const / (8. * PI * electron_mass * pow(electron_mass * 
           c * c, 2.))) * (pow(x[l], -2.)) * (c * (N_x[l] + N_external[l] * sw_ext) / vol) 
         * delta_ge_int * pe_single[l][k] * ((N_e[k + 1] - N_e[k]) / delta_ge_int - 2. * N_e[k]);
@@ -993,7 +967,7 @@ void single_plasmoid_calculation(double magnetization, double half_length, doubl
 
 
 
-    // Prints the interation value every 100 interations.
+    /* Prints the interation value every 100 interations. */
     if(i % 100 == 0) 
     {
       printf("Finished %d out of %d. \n", i, plasmoid_iteration);
