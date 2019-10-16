@@ -13,8 +13,8 @@
 /* Electron charge in CGS. */
 #define electric_charge 4.8032068E-10
 
-/* Plank's constant in erg s. */
-#define plank_const 6.6260755E-27
+/* Planck's constant in erg s. */
+#define planck_const 6.6260755E-27
 
 /* Boltzman constant in erg K^(-1). */
 #define boltzman_const 1.380658E-16
