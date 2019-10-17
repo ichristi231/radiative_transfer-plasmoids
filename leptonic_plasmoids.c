@@ -97,7 +97,7 @@ int main()
 
   /* For each plasmoid, we call the radiative transfer function to calculate
      the co-moving photon and particle distributions for each plasmoid using
-     the free parameters chosen above. */
+     the free parameters chosen in the initial_conditions.h file. */
   for (int i = 0; i < number_of_plasmoids; i++)
   {
     single_plasmoid_calculation(magnetization_sigma, half_length_L, B_up, plasmoid_avg_num_den[i],
@@ -112,8 +112,9 @@ int main()
 
 
 
-/****** Radiative Transfer Calulation For Single Plasmoid ******/
-/***************************************************************/
+
+/****** Radiative Transfer Calculation For Single Plasmoid ******/
+/****************************************************************/
 void single_plasmoid_calculation(double magnetization, double half_length, double B_upstream, 
   double plasmoid_avg_num_den, double pair_multiplicity, double Gamma_jet,
   double electron_injec_slope, double BLR_temp, double ge_max, double theta_p,
@@ -156,7 +157,7 @@ void single_plasmoid_calculation(double magnetization, double half_length, doubl
   /* The addition of radiation fields external to the jet. 
      Here, the radiation field is taken to be the BLR of 
      the jet, assumed to be a blackbody source with 
-     temperature set above. */
+     temperature set in the initial_conditions.h . */
   sw_ext = 0; 
   /* The radiative transfer caculation. Used for checking
      the initalization of all quantities prior to the start
@@ -178,11 +179,10 @@ void single_plasmoid_calculation(double magnetization, double half_length, doubl
      ii) plasmoid's Lorentz factor as measured in the reconnection frame.
      iii) plasmoid's co-moving volume 
      iv) the co-moving temporal derivative of the plasmoid's co-moving
-     volume (normalized the the half-length of the reconnection layer
-     cubed)
+     volume (normalized the  half-length of the reconnection layer cubed)
 
-     Note that all quantities read in are except the plasmoid's Lorentz
-     factor are the log-10 values. 
+     Note that all quantities read in are, except the plasmoid's Lorentz
+     factor, the log-10 values. 
   */
   int i = 0;
 
@@ -260,10 +260,11 @@ void single_plasmoid_calculation(double magnetization, double half_length, doubl
   for (l = 0; l < lmax; l++) 
   {
     nu[l] = pow(10, 7. + (l / (lmax - 1.)) * (40. - 7.)); 
-    x[l] = plank_const * nu[l] / (electron_mass * c * c); 
+    x[l] = planck_const * nu[l] / (electron_mass * c * c); 
     fprintf(nu_save, "%lf\n", log10(nu[l]));
   }
   fclose(nu_save);
+
   /* The difference of the log-space spacing between photon energies.
   This will be used when integrating over the photon energy 
   (e.g. inverse Compton scattering). */
@@ -299,6 +300,7 @@ void single_plasmoid_calculation(double magnetization, double half_length, doubl
     fprintf(gamma_e_save, "%lf\n", log10(ge[k - 1]));
   }
   fclose(gamma_e_save);
+
   /* The difference of the log-space spacing between particle energies.
   This will be used when integrating over the particle Lorentz factor 
   (e.g. synchrotron emission). */
@@ -353,7 +355,7 @@ void single_plasmoid_calculation(double magnetization, double half_length, doubl
   }
 
   /* Below, we determine for which values of the dimensionless photon frequency fall within the range 
-  of the minimum (i.e. 1) & maximum Lorentz factors of the electron distribution. This is used
+  of the minimum (i.e. 1) & maximum Lorentz factor of the electron distribution. This is used
   for evaluating the electron distribution as goverened by eqn. 44 in Mastichiadis & Kirk '95.*/
   for (l = 0; l < lmax; l++)
   {
@@ -421,7 +423,7 @@ void single_plasmoid_calculation(double magnetization, double half_length, doubl
   /***************************************************************************************************/
 
 
-  /************************ Single particle electron emissivity in cgs. ************************/
+  /****************** Single particle electron Synchrotron emissivity in cgs. ******************/
   /*********************************************************************************************/
   double const_syn_e, x_store, f_store, pe_single[lmax][kmax];
   int x_index;
@@ -431,12 +433,13 @@ void single_plasmoid_calculation(double magnetization, double half_length, doubl
 
   /* Below, we determine the electron single particle synchrotron emissivity. In doing so,
      we first compute the value of x (i.e. ratio of photon frequency to the critical 
-     synchrotron cooling frequency) using our values of the photon frequency nu and the
-     electron Lorentz factor gamma. We then, for every value of x which falls in the range
-     of the imported x-table (see above), we compute the synchroton emissivity using eqn. 6.33
-     in Rybicki & Lightman '86. */
+     synchrotron cooling frequency, see Rybicki & Lightman '86 just following eqn. 6.31c) using 
+     our values of the photon frequency nu and the electron Lorentz factor gamma. We then, for 
+     every value of x which falls in the range of the imported x-table (see above), we compute 
+     the synchroton emissivity using eqn. 6.33 in Rybicki & Lightman '86. */
   for (l = 0; l < lmax; l++)
   {
+    f_store = 0;
     for (k = 0; k < kmax; k++)
     {
     	x_store = nu[l] * 4. * PI * electron_mass * c /(3. * electric_charge * B * ge[k] * ge[k]);
@@ -448,7 +451,7 @@ void single_plasmoid_calculation(double magnetization, double half_length, doubl
         {
           x_index += log10(x_store) >= x_store_table[i];
         }
-    		f_store = pow(10, f_store_table[x_index]);
+    		f_store = pow(10., f_store_table[x_index]);
     	}
     	else 
       {
@@ -479,8 +482,8 @@ void single_plasmoid_calculation(double magnetization, double half_length, doubl
   }
 
   /* Below, we determine the index in the dimensionless photon frequency array in which 1/x = x, where
-  x is the dimensionless frequency. This index is used for the lower bound of the loss term as governed
-  by eqn. 54 in Mastichiadis & Kirk '95. */
+  x is the dimensionless photon frequency. This index is used for the lower bound of the loss term as 
+  governed by eqn. 54 in Mastichiadis & Kirk '95. */
   for (l = 0; l < lmax; l++)
   {
     gg_ee_bound_loss[l] = 0;
@@ -490,9 +493,9 @@ void single_plasmoid_calculation(double magnetization, double half_length, doubl
     }
   }
 
-  /* Below, we determine the index in the dimensionless frequency array in which the inverse of two
-  times the electron Lorentz factor is closest to the dimensionless frequency. This is used in the 
-  lower bound of the source term integral as governed by eqn. 57 in Mastichiadis & Kirk '95. */
+  /* Below, we determine the index in the dimensionless photon frequency array in which the inverse of 
+  two times the electron Lorentz factor is closest to the dimensionless photon frequency. This is used 
+  in the lower bound of the source term integral as governed by eqn. 57 in Mastichiadis & Kirk '95. */
   for (k = 0; k < kmax; k++)
   {
     gg_ee_bound_source[k] = 0;
@@ -534,18 +537,23 @@ void single_plasmoid_calculation(double magnetization, double half_length, doubl
 
   /* Declares the particle and photon distributions. */
   double N_e[kmax], N_x[lmax];
+
   /* Declares all source terms Q. */
   double Q_syn_e[lmax], Q_ICT_e[lmax], Q_ICKN_e[lmax],  Q_gg_ee[kmax];
+
   /* Declares all loss terms L. */
   double L_ICKN_e[kmax], L_ICT_e_plus[kmax], L_ICT_e_minus[kmax], L_gg_ee[lmax], L_ssa[lmax];
+
   /* Declares the v2 and v3 coefficients needed to solve the tri-
      diagonal matrix algorithm for updating the particle distribution
      (see eqn. 10 in Chiaberge & Ghisellini '99). */
   double v2_e[kmax], v3_e[kmax];
+
   /* Declartion of the photon escape timescale and plasmoid volume. 
      These quantities are updated each timestep as the plasmoid size
      changes. */
   double t_esc, vol;
+
   /* The value of delta_t is determined from the smallest value of the 
      plasmoid's size (i.e. its initial size when born in the layer). */
   double delta_t = pow(10., plasmoid_size[0]) * half_length / (2. * c);
@@ -560,7 +568,8 @@ void single_plasmoid_calculation(double magnetization, double half_length, doubl
 
   /* Declaration of the plasmoid's Lorentz factor as measured in the
      rest frame of the SMBH. This quantity is used to boost the energy
-     densities of photon fields external to the jet. */
+     densities of photon fields external to the jet and is updated each 
+     time step. */
   double plasmoid_Lorentz_factor_SMBH = 0;
 
   /* Declaring the photon distribution external radiation fields. */
@@ -593,20 +602,26 @@ void single_plasmoid_calculation(double magnetization, double half_length, doubl
     */
     for (k = 0; k < kmax; k++) 
     {
+      /* Particle injection rate (see eqn. 5 in Christie et al. '19). */
       Qe_inj[k] = (ge[k] >= ge_min) * (ge[k] <= ge_max) * (1. - electron_injec_slope) * pow(ge[k], -electron_injec_slope) / 
       (pow(ge_max, 1. - electron_injec_slope) - pow(ge_min, 1. - electron_injec_slope)) * (10. * 
         plasmoid_avg_num_den / 4.) * (pow(B_upstream, 2.) / (4. * PI * proton_mass * c * c * 
           magnetization)) * c * plasmoid_Lorentz_factor[i] * pow(10, plasmoid_volume_derivative[i]) * 
             half_length * half_length;
     }
+    /* Photon escape timescale, in seconds. */
     t_esc = pow(10., plasmoid_size[i]) * half_length / (2. * c);
+    
+    /* Plasmoid volume in cm^3. */
     vol = pow(10., plasmoid_volume[i]) * pow(half_length, 3.);
 
+    /* Plasmoid Lorentz factor with respect to the BH frame. */
     plasmoid_Lorentz_factor_SMBH = Gamma_jet * plasmoid_Lorentz_factor[i] * (1. + 
       Beta_jet * sqrt(1. - pow(plasmoid_Lorentz_factor[i], -2.)) * cos(theta_p * PI / 180.));
 
     for (l = 0; l < lmax; l++)
     {
+      /* Updating the external photon field fromthe BLR. */
       N_external[l] = 0.5 * 0.265 * f_BLR *vol * x[l] * pow(plasmoid_Lorentz_factor_SMBH * electron_mass *
         c * c, 2.) * pow(boltzman_const * BLR_temp * plasmoid_Lorentz_factor_SMBH, -3.) / (
         exp(x[l] * electron_mass * c * c / (boltzman_const * BLR_temp * plasmoid_Lorentz_factor_SMBH)) - 1.);
@@ -724,8 +739,9 @@ void single_plasmoid_calculation(double magnetization, double half_length, doubl
   	as determined from Chiaberge & Gisellini '99, eqn. 10. */
   	for (k = 0; k < kmax; k++)
   	{
-      v2_e[k] = 1. + (delta_t / delta_ge[k]) * (ge_minus[k] * ge_minus[k]) * (const_syn_e*sw_syn_e + 
+      v2_e[k] = 1. + (delta_t / delta_ge[k]) * (ge_minus[k] * ge_minus[k]) * (const_syn_e * sw_syn_e + 
         L_ICT_e_minus[k] * sw_ict);
+
       v3_e[k] = -(delta_t / delta_ge[k]) * (ge_plus[k] * ge_plus[k]) * (const_syn_e * sw_syn_e + 
         L_ICT_e_plus[k] * sw_ict);
   	}
@@ -901,6 +917,7 @@ void single_plasmoid_calculation(double magnetization, double half_length, doubl
     /******************* Checks Particle Number Conservation **************/
     /**********************************************************************/
     sum_inj = 0; N_tot = 0;
+
     for (k = 0; k < kmax; k++)
     {
       N_tot += ge[k] * N_e[k] * delta_ge_int;
@@ -917,7 +934,7 @@ void single_plasmoid_calculation(double magnetization, double half_length, doubl
     /* Prints the interation value every 100 interations. */
     if(i % 100 == 0) 
     {
-      printf("Finished %d out of %d. \n", i, plasmoid_iteration);
+      printf("Finished %d out of %d.\n", i, plasmoid_iteration);
     }
   }
 
