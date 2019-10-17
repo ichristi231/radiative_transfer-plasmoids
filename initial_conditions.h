@@ -13,13 +13,13 @@
 #define magnetization_sigma 10.0
 
 /* Half-length of the reconnection layer in cm. */
-#define half_length_L 5.e16 / 3.3
+#define half_length_L 5.e16
 
 /* Magnetic field strength (in G) and magnetic energy desntiy within the radiating 
  blob. The magnetic field far upstream from the reconnecting plasma is set first.
  The magnetic field in the plasmoid is then sqrt(2) times larger (see Fig. 5 in 
  Sironi et al. 2016). */
-#define B_up 1.5
+#define B_up 1.5/3.3
 
 /* Number of pairs to ions within the jet. */
 #define pair_multiplicity_N_pm 1.
@@ -33,7 +33,7 @@
 
 /* Characteristic temperature in Kelvin of blackbody external 
  radiation field (if applicable). */
-#define BLR_T 5.E3
+#define BLR_T 1.E4
 
 /* Maximum Lorentz factor of injected electron distribution. */
 #define gamma_e_max 5.E4

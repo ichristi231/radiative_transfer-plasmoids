@@ -147,7 +147,7 @@ void single_plasmoid_calculation(double magnetization, double half_length, doubl
   /* Synchrotron emission */
   sw_syn_e = 1; 
   /* Photon annihilation to pair production */
-  sw_ggee = 1; 
+  sw_ggee = 0; 
   /* Inverse Compton (Klein-Nishina regime) emission */
   sw_ickn = 1; 
   /* Inverse Compton (Thomson regime) emission */
@@ -643,7 +643,7 @@ void single_plasmoid_calculation(double magnetization, double half_length, doubl
   		Q_syn_e[l] = 0;
   	  for (k = 0; k < kmax; k++) 
       {
-        Q_syn_e[l] += pe_single[l][k] * ge[k] * N_e[k] * delta_ge_int / (plank_const * x[l]);
+        Q_syn_e[l] += pe_single[l][k] * ge[k] * N_e[k] * delta_ge_int / (planck_const * x[l]);
       }
   	}
   	/************************************************************************/
@@ -869,11 +869,11 @@ void single_plasmoid_calculation(double magnetization, double half_length, doubl
   	for (l = 0; l < lmax; l++)
   	{
   		L_ssa[l] = 0.;
-  		for (k = 0; k < kmax; k++) 
+  		for (k = 0; k < kmax - 1; k++) 
       {
-        L_ssa[l] += -(plank_const * plank_const / (8. * PI * electron_mass * pow(electron_mass * 
+        L_ssa[l] += -(planck_const * planck_const / (8. * PI * electron_mass * pow(electron_mass * 
           c * c, 2.))) * (pow(x[l], -2.)) * (c * (N_x[l] + N_external[l] * sw_ext) / vol) 
-        * delta_ge_int * pe_single[l][k] * ((N_e[k + 1] - N_e[k]) / delta_ge_int - 2. * N_e[k]);
+        * delta_ge_int * pe_single[l][k] * ((N_e[k + 1] - N_e[k]) / (delta_ge_int) - 2. * N_e[k]);
       }
   		if (L_ssa[l] <= 0.) 
       {
@@ -900,12 +900,12 @@ void single_plasmoid_calculation(double magnetization, double half_length, doubl
 
   		if (l != lmax - 1) 
       {
-        fprintf(nu_L_nu_save, "%lf ", log10(N_x[l] * pow(plank_const * nu[l], 2.) / 
+        fprintf(nu_L_nu_save, "%lf ", log10(N_x[l] * pow(planck_const * nu[l], 2.) / 
           (electron_mass * c *c * t_esc) + 1.) );
       }
   		else 
       {
-        fprintf(nu_L_nu_save, "%lf\n", log10(N_x[l]*pow(plank_const * nu[l], 2.) / 
+        fprintf(nu_L_nu_save, "%lf\n", log10(N_x[l]*pow(planck_const * nu[l], 2.) / 
           (electron_mass * c * c * t_esc) + 1.) );
       }
   	}
