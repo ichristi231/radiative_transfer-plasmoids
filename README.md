@@ -7,7 +7,7 @@ i) Christie I. M., Petropoulou M., Sironi L., Giannios D., 2019, MNRAS, 482, 65 
 ii) Sironi L., Giannios D., Petropoulou M., 2016, MNRAS, 462, 48 (https://ui.adsabs.harvard.edu/abs/2016MNRAS.462...48S/abstract)
 
 
-## Running C-code
+## Running C-Code
 
 To run the contents of the code, in the directory containing `leptonic_plasmoids.c` type `gcc leptonic_plasmoids.c -o leptonic_plasmoids -O3` to compile and `./leptonic_plasmoids` to run. Possible issues might arise and may require linking to the math library. If this errors occurs, compile via `gcc leptonic_plasmoids.c -o leptonic_plasmoids -O3 -lm`.
 
@@ -21,7 +21,7 @@ $ cd radiative_transfer-plasmoids
 
 $ poetry install
 
-$ poetry add [numpy, matplotlib, etc.]
+$ poetry add python-libraries (e.g. numpy, matplotlib, etc.)
 
 $ poetry run python3 results.py
 ```
