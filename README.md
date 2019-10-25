@@ -11,7 +11,7 @@ ii) Sironi L., Giannios D., Petropoulou M., 2016, MNRAS, 462, 48 (https://ui.ads
 
 To run the contents of the code, in the directory containing `leptonic_plasmoids.c` type `gcc leptonic_plasmoids.c -o leptonic_plasmoids -O3` to compile and `./leptonic_plasmoids` to run. Possible issues might arise and may require linking to the math library. If this errors occurs, compile via `gcc leptonic_plasmoids.c -o leptonic_plasmoids -O3 -lm`.
 
-## Before Running Python Scripts
+## Before Running Python Script
 
 You'll need to use [`poetry`](https://github.com/sdispater/poetry) to install the dependencies:
 ```bash
@@ -20,6 +20,8 @@ $ git clone https://github.com/ichristi231/radiative_transfer-plasmoids.git
 $ cd radiative_transfer-plasmoids
 
 $ poetry install
+
+$ poetry add [numpy, matplotlib, etc.]
 
 $ poetry run python3 results.py
 ```
