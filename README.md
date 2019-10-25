@@ -6,7 +6,7 @@ i) Christie I. M., Petropoulou M., Sironi L., Giannios D., 2019, MNRAS, 482, 65 
 
 ii) Sironi L., Giannios D., Petropoulou M., 2016, MNRAS, 462, 48 (https://ui.adsabs.harvard.edu/abs/2016MNRAS.462...48S/abstract)
 
-## Introduction
+# Introduction
 An over-arching description of the code is as follows:
 
 i) Set up the initial conditions required to compute the emission from the evolving particle distribution. For this scenario, it includes: `magnetic field of plasma far upstream from the reconnection layer` (see Fig. 5 in [[6][6]]), `half-length of the reconnection layer` (see Sec 2 and table 1 [[3][3]]), `slope of the injected particle distribution` (see eqn. 5 and table 1 in [[3][3]]), `maximum Lorentz factor of the injected particle distribution` (see Appendix A in [[3][3]]). 
@@ -18,11 +18,11 @@ iii) Numerically solves the continuity equation for the evolving the particle an
 iv) Writes to a file the log10 of the following: `particle distribution` (i.e. `gamma^p * N(gamma, t)`, where `p` is the slope of the injected particle distribution), `particle Lorentz factors`, `photon frequencies` (in Hz), and `photon spectrum` (i.e. `nu L_nu` in erg/s).
 
 
-## Running C-Code
+# Running C-Code
 
 To run the contents of the code, in the directory containing `leptonic_plasmoids.c` type `gcc leptonic_plasmoids.c -o leptonic_plasmoids -O3` to compile and `./leptonic_plasmoids` to run. Possible issues might arise and may require linking to the math library. If this errors occurs, compile via `gcc leptonic_plasmoids.c -o leptonic_plasmoids -O3 -lm`.
 
-## Before Running Python Script
+# Before Running Python Script
 
 You'll need to use [`poetry`](https://github.com/sdispater/poetry) to install the dependencies:
 ```bash
