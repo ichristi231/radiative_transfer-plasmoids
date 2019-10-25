@@ -19,7 +19,7 @@
  blob. The magnetic field far upstream from the reconnecting plasma is set first.
  The magnetic field in the plasmoid is then sqrt(2) times larger (see Fig. 5 in 
  Sironi et al. 2016). */
-#define B_up 1.5/3.3
+#define B_up sqrt(2)
 
 /* Number of pairs to ions within the jet. */
 #define pair_multiplicity_N_pm 1.

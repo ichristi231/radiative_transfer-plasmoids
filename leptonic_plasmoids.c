@@ -147,7 +147,7 @@ void single_plasmoid_calculation(double magnetization, double half_length, doubl
   /* Synchrotron emission */
   sw_syn_e = 1; 
   /* Photon annihilation to pair production */
-  sw_ggee = 0; 
+  sw_ggee = 1; 
   /* Inverse Compton (Klein-Nishina regime) emission */
   sw_ickn = 1; 
   /* Inverse Compton (Thomson regime) emission */
@@ -848,11 +848,11 @@ void single_plasmoid_calculation(double magnetization, double half_length, doubl
   	{
   		if (k != kmax - 1) 
       {
-        fprintf(N_e_save, "%lf ", log10(pow(ge[k],electron_injec_slope)*N_e[k]) + 1.);
+        fprintf(N_e_save, "%lf ", log10(pow(ge[k],electron_injec_slope) * N_e[k]));
       }
   		else 
       {
-        fprintf(N_e_save, "%lf\n", log10(pow(ge[k],electron_injec_slope)*N_e[k]) + 1.);
+        fprintf(N_e_save, "%lf\n", log10(pow(ge[k],electron_injec_slope) * N_e[k]));
       }
   	}
   	/********************************************************/
@@ -901,12 +901,12 @@ void single_plasmoid_calculation(double magnetization, double half_length, doubl
   		if (l != lmax - 1) 
       {
         fprintf(nu_L_nu_save, "%lf ", log10(N_x[l] * pow(planck_const * nu[l], 2.) / 
-          (electron_mass * c *c * t_esc) + 1.) );
+          (electron_mass * c *c * t_esc)));
       }
   		else 
       {
         fprintf(nu_L_nu_save, "%lf\n", log10(N_x[l]*pow(planck_const * nu[l], 2.) / 
-          (electron_mass * c * c * t_esc) + 1.) );
+          (electron_mass * c * c * t_esc)));
       }
   	}
   	/******************************************************/
