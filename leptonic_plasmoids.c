@@ -611,7 +611,7 @@ void single_plasmoid_calculation(double magnetization, double half_length, doubl
     }
     /* Photon escape timescale, in seconds. */
     t_esc = pow(10., plasmoid_size[i]) * half_length / (2. * c);
-    
+
     /* Plasmoid volume in cm^3. */
     vol = pow(10., plasmoid_volume[i]) * pow(half_length, 3.);
 
@@ -675,7 +675,7 @@ void single_plasmoid_calculation(double magnetization, double half_length, doubl
 
 
   	/************* Electron Inverse Compton (Thomson Regime) Loss Terms *************/
-  	/*********************************************************************************/
+  	/********************************************************************************/
   	/* As determined from eqns. 42 & 43 in Mastichiadis & Kirk '95. However, we note that the
   	 photon energy density, determined from eqn. 43, is dependent upon the electron Lorentz factor
   	 as is brought within the derivative in eqn. 42. As such, we are required to evaluate it at
@@ -692,8 +692,8 @@ void single_plasmoid_calculation(double magnetization, double half_length, doubl
         L_ICT_e_minus[k] += delta_x * x[l] * x[l] * (N_x[l] + N_external[l] * sw_ext) * 4. * sigmaT * c / (3. * vol);
       } 
   	}
-  	/*********************************************************************************/
-  	/*********************************************************************************/
+  	/********************************************************************************/
+  	/********************************************************************************/
 
 
 
