@@ -53,6 +53,7 @@ def single_plasmoid_results(num):
         axs[1].set_xlabel(r'$\nu$ (Hz)', fontsize=15)
         axs[1].set_ylabel(r'$\nu \, L_\nu$ (erg/s)', fontsize=15)
 
+    plt.show()
     plt.savefig('leptonic_version_results/co_moving_electron_photon_distribution.png')
 
 

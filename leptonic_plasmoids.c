@@ -158,7 +158,7 @@ void single_plasmoid_calculation(double magnetization, double half_length, doubl
      Here, the radiation field is taken to be the BLR of 
      the jet, assumed to be a blackbody source with 
      temperature set in the initial_conditions.h . */
-  sw_ext = 0; 
+  sw_ext = 1; 
   /* The radiative transfer caculation. Used for checking
      the initalization of all quantities prior to the start
      of the radiative section. */
@@ -347,11 +347,13 @@ void single_plasmoid_calculation(double magnetization, double half_length, doubl
   {
   	ict_bound_loss_plus[k] = 0; 
     ict_bound_loss_minus[k] = 0;
+
   	for (l = 0; l < lmax; l++) 
     {
       ict_bound_loss_plus[k] += (3. / (4. * ge_plus[k])) >= x[l]; 
       ict_bound_loss_minus[k] += (3. / (4. * ge_minus[k])) >= x[l];
     }
+    
   }
 
   /* Below, we determine for which values of the dimensionless photon frequency fall within the range 
@@ -622,7 +624,7 @@ void single_plasmoid_calculation(double magnetization, double half_length, doubl
     for (l = 0; l < lmax; l++)
     {
       /* Updating the external photon field fromthe BLR. */
-      N_external[l] = 0.5 * 0.265 * f_BLR *vol * x[l] * pow(plasmoid_Lorentz_factor_SMBH * electron_mass *
+      N_external[l] = 0.5 * 0.265 * f_BLR * vol * x[l] * pow(plasmoid_Lorentz_factor_SMBH * electron_mass *
         c * c, 2.) * pow(boltzman_const * BLR_temp * plasmoid_Lorentz_factor_SMBH, -3.) / (
         exp(x[l] * electron_mass * c * c / (boltzman_const * BLR_temp * plasmoid_Lorentz_factor_SMBH)) - 1.);
 
@@ -683,11 +685,14 @@ void single_plasmoid_calculation(double magnetization, double half_length, doubl
   	for (k = 0; k < kmax; k++)
   	{
   		L_ICT_e_plus[k] = 0; L_ICT_e_minus[k] = 0;
-  		for (l = 0; l < ict_bound_loss_plus[k]; l++) 
+
+  		//for (l = 0; l < ict_bound_loss_minus[k]; l++)
+      for (l = 0; l < lmax; l++) 
       {
         L_ICT_e_plus[k] += delta_x * x[l] * x[l] * (N_x[l] + N_external[l] * sw_ext) * 4. * sigmaT * c / (3. * vol);
       } 
-  		for (l = 0; l < ict_bound_loss_minus[k]; l++) 
+  		//for (l = 0; l < ict_bound_loss_minus[k]; l++) 
+      for (l = 0; l < lmax; l++) 
       {
         L_ICT_e_minus[k] += delta_x * x[l] * x[l] * (N_x[l] + N_external[l] * sw_ext) * 4. * sigmaT * c / (3. * vol);
       } 
