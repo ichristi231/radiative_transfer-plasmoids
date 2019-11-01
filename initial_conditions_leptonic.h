@@ -19,10 +19,10 @@
  blob. The magnetic field far upstream from the reconnecting plasma is set first.
  The magnetic field in the plasmoid is then sqrt(2) times larger (see Fig. 5 in 
  Sironi et al. 2016). */
-#define B_up 1.5/3.3
+#define B_up sqrt(2.)
 
 /* Number of pairs to ions within the jet. */
-#define pair_multiplicity_N_pm 6.
+#define pair_multiplicity_N_pm 1.
 
 /* Bulk Lorentz factor and dimensionless velocity (i.e. normalized
  to the speed of light) of the jet. */
@@ -36,7 +36,7 @@
 #define BLR_T 1.E4
 
 /* Maximum Lorentz factor of injected electron distribution. */
-#define gamma_e_max 5.E3
+#define gamma_e_max 5.E4
 
 /* The angle (in degrees) between the blazar jet's access and the plasmoid's 
  direction of motion (i.e. with respect to the jet's co-moving frame). */

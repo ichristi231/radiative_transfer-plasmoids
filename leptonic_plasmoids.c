@@ -51,14 +51,17 @@ vi) Sironi et al. '16
 #include <time.h>
 
 #include "physical_constants.h"
-#include "initial_conditions.h"
+#include "initial_conditions_leptonic.h"
 
 
 /* Declaration of photon-photon pair production reaction 
    rate (see eqn. in 4.7 in Coppi & Blandford '90). */
+
 double photon_annihilation_rate (double o);	
+
 /* Linear interpolation scheme. */ 
 double interpolation(double xx,double x1, double x2, double y1, double y2);
+
 /* Radiative Transfer function for a single plasmoid. */
 void single_plasmoid_calculation(double magnetization, double half_length, double B_upstream, 
   double plasmoid_avg_num_den, double pair_multiplicity, double Gamma_jet,
@@ -158,7 +161,7 @@ void single_plasmoid_calculation(double magnetization, double half_length, doubl
      Here, the radiation field is taken to be the BLR of 
      the jet, assumed to be a blackbody source with 
      temperature set in the initial_conditions.h . */
-  sw_ext = 1; 
+  sw_ext = 0; 
   /* The radiative transfer caculation. Used for checking
      the initalization of all quantities prior to the start
      of the radiative section. */
@@ -961,7 +964,7 @@ void single_plasmoid_calculation(double magnetization, double half_length, doubl
 /* See eqn. 4.7 in Coppi & Blandford '90. */
 double photon_annihilation_rate(double o)
 {
-  if (o >= 1.) 
+  if (o >= 1.)
   {
     return 0.652 * sigmaT * c * log(o) * (o * o - 1.) / pow(o, 3.);
   }
