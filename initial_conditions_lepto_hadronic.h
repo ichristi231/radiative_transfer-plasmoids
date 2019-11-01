@@ -7,6 +7,12 @@
 /* Number of grid points in the photon frequency range (in log space). */
 #define lmax 350
 
+/* Number of grid points in the proton energy range (in log space). */
+#define mmax 350
+
+/* Number of grid points in the neutrino energy range (in log space). */
+#define nmax 100
+
 /* Magnetization of un-reconnected (upstream) plasma. Defined as the ratio of the
  magnetic energy density to particle eneregy density far upstream from the 
  reconnection layer. */
