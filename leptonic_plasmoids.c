@@ -641,8 +641,8 @@ void single_plasmoid_calculation(double magnetization, double half_length, doubl
 
 
 
-  	/************* Synchrotron Source Terms (Electron & Proton) *************/
-  	/************************************************************************/
+  	/************* Synchrotron Source Terms (Electron) *************/
+  	/***************************************************************/
     for (l = 0; l < lmax; l++)
   	{
   		Q_syn_e[l] = 0;
@@ -651,8 +651,8 @@ void single_plasmoid_calculation(double magnetization, double half_length, doubl
         Q_syn_e[l] += pe_single[l][k] * ge[k] * N_e[k] * delta_ge_int / (planck_const * x[l]);
       }
   	}
-  	/************************************************************************/
-  	/************************************************************************/
+  	/***************************************************************/
+  	/***************************************************************/
 
 
 
