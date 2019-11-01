@@ -41,7 +41,9 @@ def single_plasmoid_results(num):
         axs[1].loglog(10**photon_frequency,
                       10**co_moving_lumionsity[viz_array[i]], color=colors[i])
 
-        # x and y-axis ranges
+        # x and y-axis ranges for both subplots
+        axs[0].set_ylim([10**39., 10**57.])
+        axs[0].set_xlim([10**0., 10**7.])
         axs[1].set_ylim([10**35., 10**41.])
         axs[1].set_xlim([10**8., 10**32.])
 
