@@ -743,7 +743,7 @@ void single_plasmoid_calculation(double magnetization, double half_length, doubl
 
   	/*********** Electron Distribution Update Coefficients ***********/
   	/*****************************************************************/
-  	/* Coefficients used in updating the electron (& proton) particle distributions
+  	/* Coefficients used in updating the electron particle distributions
   	as determined from Chiaberge & Gisellini '99, eqn. 10. */
   	for (k = 0; k < kmax; k++)
   	{
