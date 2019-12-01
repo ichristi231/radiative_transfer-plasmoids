@@ -43,9 +43,9 @@ def single_plasmoid_results(num):
 
         # x and y-axis ranges for both subplots
         axs[0].set_ylim([10**39., 10**57.])
-        axs[0].set_xlim([10**0., 10**7.])
-        axs[1].set_ylim([10**35., 10**41.])
-        axs[1].set_xlim([10**8., 10**32.])
+        axs[0].set_xlim([10**0., 10**10.])
+        axs[1].set_ylim([10**35., 10**43.])
+        axs[1].set_xlim([10**8., 10**35.])
 
         # Labels of the first subplot (electron distribution)
         axs[0].set_xlabel(r'$\gamma$', fontsize=15)
@@ -56,7 +56,7 @@ def single_plasmoid_results(num):
         axs[1].set_ylabel(r'$\nu \, L_\nu$ (erg/s)', fontsize=15)
 
     plt.show()
-    plt.savefig('leptonic_version_results/co_moving_electron_photon_distribution.png')
+    #plt.savefig('leptonic_version_results/co_moving_electron_photon_distribution.png')
 
 
 # We define the number of curves, equally spaced in time,

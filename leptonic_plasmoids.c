@@ -626,10 +626,10 @@ void single_plasmoid_calculation(double magnetization, double half_length, doubl
 
     for (l = 0; l < lmax; l++)
     {
-      /* Updating the external photon field fromthe BLR. */
-      N_external[l] = 0.5 * 0.265 * f_BLR * vol * x[l] * pow(plasmoid_Lorentz_factor_SMBH * electron_mass *
-        c * c, 2.) * pow(boltzman_const * BLR_temp * plasmoid_Lorentz_factor_SMBH, -3.) / (
-        exp(x[l] * electron_mass * c * c / (boltzman_const * BLR_temp * plasmoid_Lorentz_factor_SMBH)) - 1.);
+      /* Updating the external photon field from the BLR. */
+      N_external[l] = 0.265 * f_BLR * (15. / pow(boltzman_const * BLR_temp * plasmoid_Lorentz_factor_SMBH * PI, 4.)) *
+      x[l] * x[l] * vol * pow(electron_mass * c * c, 3.) / (exp(x[l] * electron_mass * c * c / 
+        (boltzman_const * BLR_temp * plasmoid_Lorentz_factor_SMBH)) - 1.) * pow(plasmoid_Lorentz_factor_SMBH, 2.);
 
       if (N_external[l] < 1.E-200) 
       {
